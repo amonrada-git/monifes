@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
+/*
+  monifes — calm, mindful budgeting.
+  Current palette: simple black & white (per request), light-only by design.
+  The layout is variable-driven, so restoring the warm cream/orange mockup
+  palette later is a matter of swapping these values back.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light; /* light-only is intentional — keep form controls light too */
+
+  /* The user's exact scheme (thedot.space paper look):
+     background #D1D0CC · ink #020201 · gray #91908C. Everything else derived. */
+  --background: #d1d0cc; /* greige canvas */
+  --card: #dbdad6; /* panels — one gentle step lighter */
+  --foreground: #020201; /* ink */
+  --muted: #91908c; /* the gray — secondary text */
+  --muted-2: #a2a19d; /* lighter step of the gray for hints */
+  --border: #91908c; /* hairlines & the quiet dots — the gray itself */
+
+  --accent: #020201; /* the one accent — ink */
+  --accent-soft: #bebdb9; /* gray fills (chips) */
+  --accent-tint: #c8c7c3; /* faint wash, a step darker than the canvas */
+
+  --need: #91908c; /* need — the gray */
+  --want: #020201; /* want — ink */
+
+  --success: #020201; /* monochrome (no-spend win, growth) */
+  --success-soft: #bebdb9;
+
+  --radius: 8px;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-card: var(--card);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-tint: var(--accent-tint);
+  --color-need: var(--need);
+  --color-want: var(--want);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --radius-card: var(--radius);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular numbers for money so amounts line up cleanly */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Gentle rise-in used across cards and sheets */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Hide scrollbars inside the phone frame for a cleaner look */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

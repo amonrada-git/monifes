@@ -1,65 +1,234 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { useStore } from "@/lib/store";
+import {
+  needWant,
+  spendsInMonth,
+  hasCheckedInToday,
+  isNoSpendDay,
+  streak,
+  plant,
+  dayKey,
+} from "@/lib/compute";
+import { bucketOf, feelingOf } from "@/lib/types";
+import { formatMoney } from "@/lib/currencies";
+import { Card, SectionLabel } from "@/components/ui";
+import { Plant } from "@/components/plant";
+import { NeedWantDonut, EmptyDonut } from "@/components/need-want-donut";
+import { CaptureSheet } from "@/components/capture-sheet";
+
+export default function HomePage() {
+  const { data, ready } = useStore();
+  const [capture, setCapture] = useState(false);
+  // Card sync doesn't exist yet — tapping Connect explains that honestly.
+  const [connectNote, setConnectNote] = useState(false);
+
+  // Tracks the calendar day so the screen refreshes if the tab sits open
+  // across midnight (updated whenever the app regains focus).
+  const [todayKey, setTodayKey] = useState(() => dayKey(new Date()));
+  useEffect(() => {
+    const refresh = () => setTodayKey(dayKey(new Date()));
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
+  // Derive everything once per data/day change, not five times per render.
+  const derived = useMemo(() => {
+    const now = new Date();
+    const nw = needWant(spendsInMonth(data.spends, now));
+    return {
+      nw,
+      checkedIn: hasCheckedInToday(data, now),
+      todayNoSpend: isNoSpendDay(data, dayKey(now)),
+      streakDays: streak(data, now),
+      p: plant(data),
+    };
+  }, [data, todayKey]); // eslint-disable-line react-hooks/exhaustive-deps -- todayKey re-derives on day change
+
+  if (!ready) return <HomeSkeleton />;
+
+  const { nw, checkedIn, todayNoSpend, streakDays, p } = derived;
+  const currency = data.settings.currency;
+  const recent = data.spends.slice(0, 8);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex min-h-full flex-col px-5 pb-8 pt-5">
+      {/* Top bar: plant + streak · add */}
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Plant stage={p.stage} size={30} />
+          <span className="text-sm font-medium tnum">{streakDays}</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </header>
+
+      {/* Budget setup prompt — gentle, dashed */}
+      {!data.budget && (
+        <Link href="/goals" className="mt-5 block">
+          <div className="rounded-[var(--radius-card)] border border-dashed border-accent/70 p-5">
+            <p className="text-[13px] font-medium text-accent">Budget</p>
+            <p className="mt-1 text-[15px] font-medium leading-snug text-accent">
+              Let&apos;s set up buckets for your financial health!
+            </p>
+          </div>
+        </Link>
+      )}
+
+      {/* Recent activity — the heart of the screen; stretches to fill it.
+          The daily ask lives here as a slim row until today is answered. */}
+      <Card className="mt-4 flex flex-1 flex-col">
+        <div className="mb-3 flex items-center justify-between">
+          <SectionLabel>Recent activity</SectionLabel>
+          <button
+            onClick={() => setCapture(true)}
+            className="flex items-center gap-1 text-sm font-medium transition active:scale-95"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            <Plus size={16} strokeWidth={2} />
+            Add
+          </button>
+        </div>
+
+        {!checkedIn && (
+          <div className="mb-4 rounded-[var(--radius-card)] bg-accent-tint px-4 py-4">
+            <p className="text-sm font-medium">Any spending today?</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted">
+              Connect your debit/credit card to automate your spending information.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => setConnectNote(true)}
+                className="h-9 rounded-[6px] bg-accent px-4 text-xs font-medium text-white transition active:scale-95"
+              >
+                Connect
+              </button>
+              <button
+                onClick={() => setCapture(true)}
+                className="h-9 rounded-[6px] border border-foreground px-4 text-xs font-medium transition active:scale-95"
+              >
+                Record manually
+              </button>
+            </div>
+            {connectNote && (
+              <p className="mt-2.5 text-xs text-muted">
+                Card sync is coming soon — record manually for now.
+              </p>
+            )}
+          </div>
+        )}
+
+        {recent.length === 0 && !todayNoSpend ? null : (
+          <ul className="flex flex-col gap-3.5">
+            {/* today's no-spend win reads as a natural entry: ¥0 */}
+            {todayNoSpend && (
+              <li className="flex items-center gap-3">
+                <span className="text-xl">🎉</span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-[15px] font-medium">No-spend day</span>
+                  <span className="text-xs text-muted">That&apos;s how wealth grows</span>
+                </span>
+                <span className="tnum text-[15px] font-medium">
+                  {formatMoney(0, currency)}
+                </span>
+              </li>
+            )}
+            {recent.map((s) => {
+              const b = bucketOf(s.bucket);
+              const f = feelingOf(s.feeling);
+              return (
+                <li key={s.id} className="flex items-center gap-3">
+                  <span className="text-xl">{f.emoji}</span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-[15px] font-medium">
+                      {s.label || b.label}
+                    </span>
+                    <span className="text-xs text-muted">
+                      {b.emoji} {b.label}
+                    </span>
+                  </span>
+                  <span className="tnum text-[15px] font-medium">
+                    {formatMoney(s.amount, currency)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+
+      {/* Spending type balance — the Need:Want donut */}
+      <Card className="mt-4">
+        <SectionLabel>Spending type balance</SectionLabel>
+        <div className="mt-4 flex items-center gap-6">
+          {nw.total === 0 ? <EmptyDonut /> : <NeedWantDonut needPct={nw.needPct} />}
+
+          <div className="flex-1">
+            <BalanceRow
+              filled={false}
+              label="Need"
+              pct={nw.total === 0 ? 0 : nw.needPct}
+              amount={formatMoney(nw.need, currency)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="my-3 h-px bg-border" />
+            <BalanceRow
+              filled
+              label="Want"
+              pct={nw.total === 0 ? 0 : nw.wantPct}
+              amount={formatMoney(nw.want, currency)}
+            />
+          </div>
         </div>
-      </main>
+      </Card>
+
+      {capture && <CaptureSheet onClose={() => setCapture(false)} />}
+    </div>
+  );
+}
+
+function BalanceRow({
+  filled,
+  label,
+  pct,
+  amount,
+}: {
+  filled: boolean; // matches the ring: filled = Want, open = Need
+  label: string;
+  pct: number;
+  amount: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={
+          filled
+            ? "h-2.5 w-2.5 rounded-full bg-foreground"
+            : "h-2.5 w-2.5 rounded-full border border-foreground"
+        }
+      />
+      <span className="text-[15px] font-medium">{label}</span>
+      <span className="ml-auto tnum text-sm font-medium text-muted">
+        {Math.round(pct * 100)}%
+      </span>
+      <span className="tnum w-20 text-right text-[15px] font-medium">{amount}</span>
+    </div>
+  );
+}
+
+function HomeSkeleton() {
+  return (
+    <div className="px-5 pt-5">
+      <div className="flex items-center justify-between">
+        <div className="h-10 w-24 rounded-full bg-card" />
+        <div className="h-11 w-11 rounded-full bg-card" />
+      </div>
+      <div className="mt-5 h-48 rounded-[var(--radius-card)] bg-card" />
+      <div className="mt-4 h-32 rounded-[var(--radius-card)] bg-card" />
+      <div className="mt-4 h-40 rounded-[var(--radius-card)] bg-card" />
     </div>
   );
 }
