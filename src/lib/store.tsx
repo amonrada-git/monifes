@@ -22,7 +22,7 @@ import {
 } from "./types";
 import { dayKey } from "./compute";
 import { supabase } from "./supabase";
-import { Op, applyOp, fetchAll, flush, isUuid } from "./sync";
+import { Op, applyOp, fetchAll, flush, isOp, isUuid } from "./sync";
 import { makeId } from "./utils";
 
 // Guest data (not signed in) lives here, exactly as before accounts existed.
@@ -86,10 +86,18 @@ function sanitize(parsed: Partial<AppData>): AppData {
           typeof s.createdAt === "string" &&
           !Number.isNaN(new Date(s.createdAt).getTime()),
       )
+      // Labels are capped at 40 on the server too — trim old/odd ones here so
+      // they can't be rejected on sync.
+      .map((s) => ({
+        ...s,
+        label: typeof s.label === "string" ? s.label.slice(0, 40) || undefined : undefined,
+      }))
     : [];
 
   const noSpendDays = Array.isArray(parsed.noSpendDays)
-    ? parsed.noSpendDays.filter((d): d is string => typeof d === "string")
+    ? parsed.noSpendDays.filter(
+        (d): d is string => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d),
+      )
     : [];
 
   const b = parsed.budget;
@@ -142,7 +150,7 @@ function remove(key: string) {
 const loadGuest = () => read(STORAGE_KEY, (v) => sanitize(v as Partial<AppData>)) ?? DEFAULT_DATA;
 const loadCache = (uid: string) => read(cacheKey(uid), (v) => sanitize(v as Partial<AppData>));
 const loadQueue = (uid: string) =>
-  read(queueKey(uid), (v) => (Array.isArray(v) ? (v as Op[]) : [])) ?? [];
+  read(queueKey(uid), (v) => (Array.isArray(v) ? v.filter(isOp) : [])) ?? [];
 
 function hasGuestData(g: AppData): boolean {
   return (
@@ -182,7 +190,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Refs mirror the async-facing state so callbacks never act on a stale account.
   const accountRef = useRef<Account | null>(null);
   const queueRef = useRef<Op[]>([]);
-  const flushingRef = useRef(false);
+  // The flush in flight, per account — a leftover flush from someone who just
+  // signed out must never make the next person's flushes no-ops.
+  const flushRef = useRef<{ uid: string; done: Promise<void> } | null>(null);
+  // While an account's data is loading, every change made meanwhile is also
+  // noted here, so the (older) server snapshot can't overwrite it.
+  const journalRef = useRef<Op[] | null>(null);
+  // Who the latest auth event says is signed in (undefined = no event yet).
+  const authTargetRef = useRef<string | null | undefined>(undefined);
 
   // false during server render & hydration, true right after — keeps the
   // server-rendered skeleton and the first client paint in agreement.
@@ -208,31 +223,53 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setPending(q.length);
   }, []);
 
-  /** Send everything queued. Safe to call any time; concurrent calls coalesce. */
-  const runFlush = useCallback(async () => {
+  /**
+   * Send everything queued. Safe to call any time: calls for the same account
+   * share one in-flight flush, and awaiting it means the queue is drained (or
+   * waiting on the network).
+   */
+  const runFlush = useCallback((): Promise<void> => {
     const acct = accountRef.current;
-    if (!acct || flushingRef.current || !queueRef.current.length) return;
-    flushingRef.current = true;
-    setFlushing(true);
-    try {
-      while (queueRef.current.length) {
-        const batch = queueRef.current;
-        const rest = await flush(acct.id, batch);
-        if (accountRef.current?.id !== acct.id) return; // signed out mid-flight
-        // Ops added while this batch was in flight stay queued behind it.
-        setQueue(acct.id, queueRef.current.slice(batch.length - rest.length));
-        if (rest.length) break; // offline or failing — retry later
+    if (!acct || !queueRef.current.length) return Promise.resolve();
+    if (flushRef.current?.uid === acct.id) return flushRef.current.done;
+
+    // Filled in right after the flush starts (its body begins with an await).
+    const entry = { uid: acct.id } as { uid: string; done: Promise<void> };
+    const done = (async () => {
+      await null; // run the body async so `entry` is set before `finally`
+      setFlushing(true);
+      try {
+        while (queueRef.current.length) {
+          const batch = queueRef.current;
+          const finished = await flush(acct.id, batch);
+          if (accountRef.current?.id !== acct.id) {
+            // Signed out mid-flight: the saved queue still starts with this
+            // batch, so trim what the server already has — otherwise it would
+            // be sent again at the next sign-in.
+            const stored = loadQueue(acct.id).slice(finished);
+            if (stored.length) write(queueKey(acct.id), stored);
+            else remove(queueKey(acct.id));
+            return;
+          }
+          // Ops added while this batch was in flight stay queued behind it.
+          setQueue(acct.id, queueRef.current.slice(finished));
+          if (finished < batch.length) break; // offline or failing — retry later
+        }
+      } finally {
+        if (flushRef.current === entry) flushRef.current = null;
+        setFlushing(false);
       }
-    } finally {
-      flushingRef.current = false;
-      setFlushing(false);
-    }
+    })();
+    entry.done = done;
+    flushRef.current = entry;
+    return done;
   }, [setQueue]);
 
   /** Switch the whole app to an account (or back to guest). */
   const enter = useCallback(
     async (next: Account | null) => {
       accountRef.current = next;
+      journalRef.current = null;
 
       if (!next) {
         queueRef.current = [];
@@ -253,6 +290,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       await runFlush();
 
+      const journal: Op[] = [];
+      journalRef.current = journal;
       let remote: (AppData & { fresh: boolean }) | null = null;
       try {
         remote = await fetchAll();
@@ -260,19 +299,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         console.warn("[monifes] couldn't load account, using this device's copy", err);
       }
       if (accountRef.current?.id !== uid) return;
+      journalRef.current = null;
+
+      // Couldn't reach the server: keep showing the device copy. Guest data
+      // stays where it is too — whether to adopt its settings depends on
+      // whether the account is new, which we can only learn from the server.
+      // It migrates on the next successful load.
+      if (!remote) return;
 
       // Bring over anything logged as a guest on this device, then clear it —
       // the ops are safely in the account's queue before the guest copy goes.
       const guest = loadGuest();
       if (hasGuestData(guest)) {
-        const ops = guestOps(guest, remote?.fresh ?? false);
-        setQueue(uid, [...queueRef.current, ...ops]);
+        setQueue(uid, [...queueRef.current, ...guestOps(guest, remote.fresh)]);
         remove(STORAGE_KEY);
-        if (!remote) setData((d) => ops.reduce(applyOp, d));
       }
 
-      // Server truth plus whatever hasn't reached the server yet.
-      if (remote) setData(queueRef.current.reduce(applyOp, remote as AppData));
+      // Server truth, then whatever hasn't reached it yet, then every change
+      // made while we were loading (some may already be on the server but
+      // missing from this snapshot). Ops are idempotent, so replaying is safe.
+      const noted = new Set(journal);
+      const replay = [...queueRef.current.filter((op) => !noted.has(op)), ...journal];
+      setData(replay.reduce(applyOp, remote as AppData));
       await runFlush();
     },
     [runFlush, setQueue],
@@ -280,14 +328,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // Follow the sign-in state. Supabase fires INITIAL_SESSION once on start.
   useEffect(() => {
+    if (!supabase) {
+      // No backend configured: guest mode only.
+      authTargetRef.current = null;
+      setTimeout(() => void enter(null), 0);
+      return;
+    }
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user;
       const next = u ? { id: u.id, email: u.email ?? "" } : null;
-      // Token refreshes re-fire with the same person — nothing to switch.
-      if ((next?.id ?? null) === (accountRef.current?.id ?? null)) {
-        setAuthReady(true);
-        return;
-      }
+      // Token refreshes, and INITIAL_SESSION followed by SIGNED_IN, re-fire
+      // with the same person — switch only when the person actually changes.
+      if ((next?.id ?? null) === authTargetRef.current) return;
+      authTargetRef.current = next?.id ?? null;
       // Supabase calls must not run inside this callback (it holds an auth
       // lock), so step out of it first.
       setTimeout(() => void enter(next), 0);
@@ -314,6 +367,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const commit = useCallback(
     (op: Op) => {
       setData((d) => applyOp(d, op));
+      journalRef.current?.push(op);
       const acct = accountRef.current;
       if (!acct) return;
       setQueue(acct.id, [...queueRef.current, op]);
@@ -326,7 +380,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const acct = accountRef.current;
     if (!acct) return;
     await runFlush(); // best effort: get the last changes up first
-    await supabase.auth.signOut({ scope: "local" });
+    await supabase?.auth.signOut({ scope: "local" });
     // Don't leave someone's spending history readable on a shared phone. Any
     // still-unsent changes stay queued and go up next time they sign in here.
     remove(cacheKey(acct.id));

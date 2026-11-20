@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { X, Delete, Check } from "lucide-react";
 import { BUCKETS, FEELINGS, Bucket, Feeling } from "@/lib/types";
 import { useStore } from "@/lib/store";
@@ -28,12 +28,15 @@ export function CaptureSheet({ onClose }: { onClose: () => void }) {
 
   // After the "Logged" celebration breathes for a moment, close the sheet.
   // Effect-scoped so the timer is cancelled if the sheet unmounts first —
-  // a stale timer must never dismiss a freshly reopened sheet.
+  // a stale timer must never dismiss a freshly reopened sheet. Reading
+  // onClose through an effect event keeps the timer from restarting each
+  // time the parent re-renders (it does, several times, while a spend syncs).
+  const close = useEffectEvent(() => onClose());
   useEffect(() => {
     if (step !== "done") return;
-    const t = setTimeout(onClose, 1100);
+    const t = setTimeout(close, 1100);
     return () => clearTimeout(t);
-  }, [step, onClose]);
+  }, [step]);
 
   function press(key: string) {
     setAmountStr((cur) => {

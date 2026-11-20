@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { X, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -34,15 +34,22 @@ export function SignInSheet({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     if (step === "code") codeRef.current?.focus();
+  }, [step]);
+
+  // Close after the "You're in" moment. An effect event, so the parent
+  // re-rendering (sign-in triggers several) doesn't restart the timer.
+  const close = useEffectEvent(() => onClose());
+  useEffect(() => {
     if (step !== "done") return;
-    const t = setTimeout(onClose, 1100);
+    const t = setTimeout(close, 1100);
     return () => clearTimeout(t);
-  }, [step, onClose]);
+  }, [step]);
 
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   async function sendCode() {
     if (!validEmail || busy) return;
+    if (!supabase) return setError("Accounts aren’t available right now.");
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.signInWithOtp({
@@ -57,7 +64,7 @@ export function SignInSheet({ onClose }: { onClose: () => void }) {
   }
 
   async function verify(token: string) {
-    if (token.length !== CODE_LENGTH || busy) return;
+    if (token.length !== CODE_LENGTH || busy || !supabase) return;
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.verifyOtp({
