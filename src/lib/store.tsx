@@ -54,7 +54,15 @@ interface StoreValue {
   account: Account | null;
   sync: SyncState;
   signOut: () => Promise<void>;
-  addSpend: (input: { amount: number; bucket: Bucket; feeling: Feeling; label?: string }) => void;
+  addSpend: (input: {
+    amount: number;
+    bucket: Bucket;
+    feeling: Feeling;
+    label?: string;
+    /** Imports pass their own: a stable id (so re-imports dedupe) and the purchase date. */
+    id?: string;
+    createdAt?: string;
+  }) => void;
   deleteSpend: (id: string) => void;
   markNoSpendDay: (day?: string) => void;
   unmarkNoSpendDay: (day: string) => void;
@@ -394,12 +402,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       commit({
         t: "spend.put",
         spend: {
-          id: makeId(),
+          id: input.id ?? makeId(),
           amount: input.amount,
           bucket: input.bucket,
           feeling: input.feeling,
-          label: input.label?.trim() || undefined,
-          createdAt: new Date().toISOString(),
+          label: input.label?.trim().slice(0, 40) || undefined,
+          createdAt: input.createdAt ?? new Date().toISOString(),
         },
       });
     },

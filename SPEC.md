@@ -130,10 +130,9 @@ hierarchy via size & gray), Inter font, 8px card radius, month-as-dot-grid on In
 - 📚 **1-minute daily money micro-lessons.** Small bite-sized learning, one minute a day.
   Feeds the *same* growth loop — lessons also grow the plant. Awareness (check-ins) + knowledge
   (lessons) is what turns "recording history" into "becoming wealthy."
-- 💳 **Card import.** Home already shows a "Connect" button (stubbed with a coming-soon note).
-  Direction agreed: don't auto-sync silently — import a statement (CSV first), then walk
-  through tagging each transaction with a feeling, so imported spends still pass through the
-  mirror. Automation for completeness, manual for meaning.
+- 💳 **Live card connection.** CSV import shipped in Phase 1 (below). A live connection would go
+  through an aggregator (Moneytree LINK in Japan; Thailand coverage unclear) — needs a business
+  contract, so it's after launch.
 
 ## Open decision (next session)
 
@@ -152,6 +151,10 @@ hierarchy via size & gray), Inter font, 8px card radius, month-as-dot-grid on In
 - ✅ Local storage w/ validation; deep code review passed (9 findings fixed)
 - ✅ Accounts: email-code sign-in, Supabase sync with offline queue, guest → account
   migration, sign out (Profile → Account card)
+- ✅ Statement import (Home → Import): any card's CSV, UTF-8 or Shift_JIS, preamble lines
+  skipped; date/shop/amount columns guessed then confirmable; payments & refunds left out; each
+  purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
+  the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - ⏳ Launch needs: export my data, delete my account, privacy policy, deploy to monifes.com
 - ⏳ Goals tab: placeholder — 4-bucket budget setup + difficulty picker not built yet
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { FileUp, Plus } from "lucide-react";
 import { useStore } from "@/lib/store";
 import {
   needWant,
@@ -19,12 +19,12 @@ import { Card, SectionLabel } from "@/components/ui";
 import { Plant } from "@/components/plant";
 import { NeedWantDonut, EmptyDonut } from "@/components/need-want-donut";
 import { CaptureSheet } from "@/components/capture-sheet";
+import { ImportSheet } from "@/components/import-sheet";
 
 export default function HomePage() {
   const { data, ready } = useStore();
   const [capture, setCapture] = useState(false);
-  // Card sync doesn't exist yet — tapping Connect explains that honestly.
-  const [connectNote, setConnectNote] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   // Tracks the calendar day so the screen refreshes if the tab sits open
   // across midnight (updated whenever the app regains focus).
@@ -85,27 +85,36 @@ export default function HomePage() {
       <Card className="mt-4 flex flex-1 flex-col">
         <div className="mb-3 flex items-center justify-between">
           <SectionLabel>Recent activity</SectionLabel>
-          <button
-            onClick={() => setCapture(true)}
-            className="flex items-center gap-1 text-sm font-medium transition active:scale-95"
-          >
-            <Plus size={16} strokeWidth={2} />
-            Add
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setImporting(true)}
+              className="flex items-center gap-1 text-sm font-medium text-muted transition active:scale-95"
+            >
+              <FileUp size={15} strokeWidth={2} />
+              Import
+            </button>
+            <button
+              onClick={() => setCapture(true)}
+              className="flex items-center gap-1 text-sm font-medium transition active:scale-95"
+            >
+              <Plus size={16} strokeWidth={2} />
+              Add
+            </button>
+          </div>
         </div>
 
         {!checkedIn && (
           <div className="mb-4 rounded-[var(--radius-card)] bg-accent-tint px-4 py-4">
             <p className="text-sm font-medium">Any spending today?</p>
             <p className="mt-1 text-xs leading-relaxed text-muted">
-              Connect your debit/credit card to automate your spending information.
+              Import your card statement and tag each purchase, or record a spend yourself.
             </p>
             <div className="mt-3 flex gap-2">
               <button
-                onClick={() => setConnectNote(true)}
+                onClick={() => setImporting(true)}
                 className="h-9 rounded-[6px] bg-accent px-4 text-xs font-medium text-white transition active:scale-95"
               >
-                Connect
+                Import statement
               </button>
               <button
                 onClick={() => setCapture(true)}
@@ -114,11 +123,6 @@ export default function HomePage() {
                 Record manually
               </button>
             </div>
-            {connectNote && (
-              <p className="mt-2.5 text-xs text-muted">
-                Card sync is coming soon — record manually for now.
-              </p>
-            )}
           </div>
         )}
 
@@ -186,6 +190,7 @@ export default function HomePage() {
       </Card>
 
       {capture && <CaptureSheet onClose={() => setCapture(false)} />}
+      {importing && <ImportSheet onClose={() => setImporting(false)} />}
     </div>
   );
 }
