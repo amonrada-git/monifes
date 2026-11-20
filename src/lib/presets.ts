@@ -1,5 +1,6 @@
 import { AppData, Bucket, Feeling } from "./types";
 import { dayKey } from "./compute";
+import { makeId } from "./utils";
 
 export type PresetName = "empty" | "some" | "budget";
 
@@ -46,8 +47,8 @@ export function makePreset(name: PresetName): AppData {
   };
   if (name === "empty") return base;
 
-  const spends = DEMO_SPENDS.map(([daysAgo, hour, amount, bucket, feeling, label], i) => ({
-    id: `demo-${i}`,
+  const spends = DEMO_SPENDS.map(([daysAgo, hour, amount, bucket, feeling, label]) => ({
+    id: makeId(),
     amount,
     bucket,
     feeling,

@@ -21,8 +21,18 @@ Emotion is the bridge between *what I spent* and *who I want to become*. monifes
 
 ## Who it's for
 
-A single user (personal tool). Phone-first: it must look and feel great on a phone above all.
-No accounts or multi-user in Phase 1.
+People in **Japan and Thailand**, launching publicly by **end of December 2026**.
+Phone-first: it must look and feel great on a phone above all.
+
+**Accounts (decided Nov 2026):** try first, sign in to save. Visitors can log spends as a
+guest on the device; "Continue with email" sends a one-time code (no passwords) and carries
+the guest's spends into the new account.
+
+**Backend:** Supabase, Singapore region (between Japan and Thailand). Postgres with Row Level
+Security, so each person can only ever read their own rows. Auth emails go out through Resend
+from `no-reply@monifes.com`; templates and the 8-digit code length live in the Supabase
+dashboard. Schema: `supabase/migrations/`. The app saves on the device first and syncs in the
+background, so it keeps working offline.
 
 ---
 
@@ -140,12 +150,14 @@ hierarchy via size & gray), Inter font, 8px card radius, month-as-dot-grid on In
 - ✅ Insights: month dot-grid (rest of the mirror pending)
 - ✅ Profile: debug presets (no data / some data / data + budget); settings pending
 - ✅ Local storage w/ validation; deep code review passed (9 findings fixed)
+- ✅ Accounts: email-code sign-in, Supabase sync with offline queue, guest → account
+  migration, sign out (Profile → Account card)
+- ⏳ Launch needs: export my data, delete my account, privacy policy, deploy to monifes.com
 - ⏳ Goals tab: placeholder — 4-bucket budget setup + difficulty picker not built yet
 
 ---
 
 ## Out of scope (for now)
 
-- Multi-user / accounts / auth
 - Bank syncing / automatic import
 - Desktop-first layouts (mobile is the priority)
