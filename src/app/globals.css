@@ -52,8 +52,12 @@
   --radius-card: var(--radius);
 }
 
-* {
-  border-color: var(--border);
+/* Default hairline colour. Inside @layer base so border-* utilities (e.g.
+   border-foreground) can override it — unlayered, it would beat them all. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 body {

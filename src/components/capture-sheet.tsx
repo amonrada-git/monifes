@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
-import { X, Delete, Check } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { BUCKETS, FEELINGS, Bucket, Feeling } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { currencyOf, formatMoney } from "@/lib/currencies";
 import { cn } from "@/lib/utils";
+import { AmountDisplay, Keypad, useAmountInput } from "./keypad";
 
 type Step = "amount" | "bucket" | "feeling" | "done";
 
@@ -18,13 +19,11 @@ export function CaptureSheet({ onClose }: { onClose: () => void }) {
   const currency = currencyOf(data.settings.currency);
 
   const [step, setStep] = useState<Step>("amount");
-  const [amountStr, setAmountStr] = useState("");
+  const { value: amountStr, amount, press } = useAmountInput(currency.decimals);
   const [label, setLabel] = useState("");
   const [bucket, setBucket] = useState<Bucket | null>(null);
   const [feeling, setFeeling] = useState<Feeling | null>(null);
 
-  const amount = Number(amountStr || 0);
-  const decimals = currency.decimals;
 
   // After the "Logged" celebration breathes for a moment, close the sheet.
   // Effect-scoped so the timer is cancelled if the sheet unmounts first —
@@ -37,21 +36,6 @@ export function CaptureSheet({ onClose }: { onClose: () => void }) {
     const t = setTimeout(close, 1100);
     return () => clearTimeout(t);
   }, [step]);
-
-  function press(key: string) {
-    setAmountStr((cur) => {
-      if (key === "del") return cur.slice(0, -1);
-      if (key === ".") {
-        if (decimals === 0 || cur.includes(".")) return cur;
-        return cur === "" ? "0." : cur + ".";
-      }
-      if (cur.length >= 12) return cur;
-      if (key === "0" && cur === "") return cur; // no leading zero
-      const frac = cur.split(".")[1];
-      if (frac !== undefined && frac.length >= decimals) return cur;
-      return cur + key;
-    });
-  }
 
   function chooseBucket(b: Bucket) {
     setBucket(b);
@@ -91,7 +75,7 @@ export function CaptureSheet({ onClose }: { onClose: () => void }) {
           <AmountStep
             amountStr={amountStr}
             symbol={currency.symbol}
-            allowDecimal={decimals > 0}
+            allowDecimal={currency.decimals > 0}
             label={label}
             onLabel={setLabel}
             onPress={press}
@@ -198,28 +182,12 @@ function AmountStep({
   canNext: boolean;
   onNext: () => void;
 }) {
-  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", allowDecimal ? "." : "", "0", "del"];
-  // Group the integer part with commas but show the decimals exactly as typed.
-  const [intPart, fracPart] = amountStr.split(".");
-  const display = amountStr
-    ? Number(intPart || 0).toLocaleString("en-US") +
-      (fracPart !== undefined ? `.${fracPart}` : "")
-    : "0";
-
   return (
     <div className="flex flex-col">
       <h2 className="text-2xl font-medium">Add a spend</h2>
 
-      <div className="mt-6 flex items-baseline justify-center gap-1">
-        <span className="text-3xl font-medium text-muted">{symbol}</span>
-        <span
-          className={cn(
-            "tnum text-6xl font-medium tracking-tight",
-            !amountStr && "text-muted-2",
-          )}
-        >
-          {display}
-        </span>
+      <div className="mt-6">
+        <AmountDisplay symbol={symbol} value={amountStr} />
       </div>
 
       <input
@@ -230,20 +198,8 @@ function AmountStep({
         className="mx-auto mt-5 w-full rounded-2xl bg-card px-4 py-3 text-center text-sm font-normal placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft"
       />
 
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        {keys.map((k, i) =>
-          k === "" ? (
-            <div key={i} />
-          ) : (
-            <button
-              key={i}
-              onClick={() => onPress(k)}
-              className="flex h-14 items-center justify-center rounded-2xl bg-card text-2xl font-medium transition active:scale-95 active:bg-accent-tint"
-            >
-              {k === "del" ? <Delete size={22} className="text-muted" /> : k}
-            </button>
-          ),
-        )}
+      <div className="mt-5">
+        <Keypad allowDecimal={allowDecimal} onPress={onPress} />
       </div>
 
       <button

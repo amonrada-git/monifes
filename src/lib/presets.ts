@@ -43,6 +43,8 @@ export function makePreset(name: PresetName): AppData {
     spends: [],
     noSpendDays: [],
     budget: null,
+    income: null,
+    baseline: null,
     settings: { currency: "JPY", difficulty: "recommended" },
   };
   if (name === "empty") return base;
@@ -66,6 +68,14 @@ export function makePreset(name: PresetName): AppData {
       "guilt-free": 50000,
       investments: 30000,
       savings: 20000,
+    },
+    income: 250000,
+    // Today: spending a little over the plan, building less.
+    baseline: {
+      necessities: 140000,
+      "guilt-free": 80000,
+      investments: 10000,
+      savings: 10000,
     },
   };
 }

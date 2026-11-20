@@ -41,6 +41,10 @@ export interface AppData {
   /** Dates (YYYY-MM-DD) explicitly marked as no-spend wins. */
   noSpendDays: string[];
   budget: Budget | null;
+  /** Monthly take-home pay (after tax), from onboarding. */
+  income: number | null;
+  /** Where the money goes today, per bucket per month — the "now" to the plan. */
+  baseline: Budget | null;
   settings: Settings;
 }
 
@@ -97,3 +101,13 @@ export const isBucket = (v: unknown): v is Bucket => BUCKETS.some((b) => b.key =
 export const isFeeling = (v: unknown): v is Feeling => FEELINGS.some((f) => f.key === v);
 export const isDifficulty = (v: unknown): v is Difficulty =>
   DIFFICULTIES.some((d) => d.key === v);
+
+/** A four-bucket record of non-negative numbers, or null. */
+export function sanitizeBudget(b: unknown): Budget | null {
+  if (!b || typeof b !== "object") return null;
+  const r = b as Record<string, unknown>;
+  const keys = ["necessities", "guilt-free", "investments", "savings"] as const;
+  if (!keys.every((k) => typeof r[k] === "number" && Number.isFinite(r[k]) && (r[k] as number) >= 0))
+    return null;
+  return Object.fromEntries(keys.map((k) => [k, r[k]])) as unknown as Budget;
+}

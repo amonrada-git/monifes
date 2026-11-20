@@ -20,11 +20,15 @@ import { Plant } from "@/components/plant";
 import { NeedWantDonut, EmptyDonut } from "@/components/need-want-donut";
 import { CaptureSheet } from "@/components/capture-sheet";
 import { ImportSheet } from "@/components/import-sheet";
+import { Onboarding, onboardingSeen } from "@/components/onboarding";
 
 export default function HomePage() {
   const { data, ready } = useStore();
   const [capture, setCapture] = useState(false);
   const [importing, setImporting] = useState(false);
+  // idle → open (first run detected) → done. Once open it stays open until
+  // finished: the flow saves the plan midway, which ends "first run".
+  const [onboarding, setOnboarding] = useState<"idle" | "open" | "done">("idle");
 
   // Tracks the calendar day so the screen refreshes if the tab sits open
   // across midnight (updated whenever the app regains focus).
@@ -55,6 +59,18 @@ export default function HomePage() {
   if (!ready) return <HomeSkeleton />;
 
   const { nw, checkedIn, todayNoSpend, streakDays, p } = derived;
+  // First run on this device, nothing logged or planned yet: start with the
+  // plan reveal. Anyone who already has data (e.g. signing in on a new phone)
+  // goes straight to Home.
+  if (
+    onboarding === "idle" &&
+    !data.budget &&
+    data.income === null &&
+    data.spends.length === 0 &&
+    !onboardingSeen()
+  ) {
+    setOnboarding("open");
+  }
   const currency = data.settings.currency;
   const recent = data.spends.slice(0, 8);
 
@@ -191,6 +207,7 @@ export default function HomePage() {
 
       {capture && <CaptureSheet onClose={() => setCapture(false)} />}
       {importing && <ImportSheet onClose={() => setImporting(false)} />}
+      {onboarding === "open" && <Onboarding onDone={() => setOnboarding("done")} />}
     </div>
   );
 }

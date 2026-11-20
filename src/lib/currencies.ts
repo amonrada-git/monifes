@@ -7,8 +7,8 @@ export interface Currency {
 
 export const CURRENCIES: Currency[] = [
   { code: "JPY", symbol: "¥", decimals: 0 },
-  { code: "USD", symbol: "$", decimals: 2 },
   { code: "THB", symbol: "฿", decimals: 0 },
+  { code: "USD", symbol: "$", decimals: 2 },
 ];
 
 export const currencyOf = (code: string) =>

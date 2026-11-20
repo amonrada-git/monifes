@@ -155,8 +155,14 @@ hierarchy via size & gray), Inter font, 8px card radius, month-as-dot-grid on In
   skipped; date/shop/amount columns guessed then confirmable; payments & refunds left out; each
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
+- ✅ Onboarding "magic moment" (first run, or Goals → Make my plan): take-home pay → a
+  suggested four-bucket plan drawn as 100 dots (1% each). Spending share by difficulty
+  (Easy 85% / Recommended 80% / Hard 75%) split by the Need:Want target; the rest is half
+  invested, half saved. Toggling difficulty reshapes the dots live. Then "today, roughly"
+  per bucket → Now vs Plan grids, monthly build, Need:Want now → target, the 12-month
+  difference. Income + baseline live on `profiles` (migration 0002).
+- ✅ Goals tab: the plan, this month's spending vs plan per bucket, start → plan, redo.
 - ⏳ Launch needs: export my data, delete my account, privacy policy, deploy to monifes.com
-- ⏳ Goals tab: placeholder — 4-bucket budget setup + difficulty picker not built yet
 
 ---
 

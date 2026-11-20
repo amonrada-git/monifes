@@ -19,6 +19,7 @@ import {
   isBucket,
   isDifficulty,
   isFeeling,
+  sanitizeBudget,
 } from "./types";
 import { dayKey } from "./compute";
 import { supabase } from "./supabase";
@@ -36,6 +37,8 @@ const DEFAULT_DATA: AppData = {
   spends: [],
   noSpendDays: [],
   budget: null,
+  income: null,
+  baseline: null,
   settings: { currency: "JPY", difficulty: "recommended" },
 };
 
@@ -67,6 +70,8 @@ interface StoreValue {
   markNoSpendDay: (day?: string) => void;
   unmarkNoSpendDay: (day: string) => void;
   setBudget: (budget: Budget | null) => void;
+  /** Take-home pay and today's per-bucket picture, from onboarding. */
+  setFinances: (patch: { income?: number | null; baseline?: Budget | null }) => void;
   updateSettings: (patch: Partial<Settings>) => void;
   /** Replace everything at once — used by the debug presets. */
   loadData: (data: AppData) => void;
@@ -108,14 +113,11 @@ function sanitize(parsed: Partial<AppData>): AppData {
       )
     : [];
 
-  const b = parsed.budget;
-  const budget: Budget | null =
-    b &&
-    typeof b === "object" &&
-    ["necessities", "guilt-free", "investments", "savings"].every(
-      (k) => typeof (b as unknown as Record<string, unknown>)[k] === "number",
-    )
-      ? (b as Budget)
+  const budget = sanitizeBudget(parsed.budget);
+  const baseline = sanitizeBudget(parsed.baseline);
+  const income =
+    typeof parsed.income === "number" && Number.isFinite(parsed.income) && parsed.income > 0
+      ? parsed.income
       : null;
 
   const s = parsed.settings;
@@ -126,7 +128,7 @@ function sanitize(parsed: Partial<AppData>): AppData {
       s && isDifficulty(s.difficulty) ? s.difficulty : DEFAULT_DATA.settings.difficulty,
   };
 
-  return { spends, noSpendDays, budget, settings };
+  return { spends, noSpendDays, budget, income, baseline, settings };
 }
 
 // ─── localStorage helpers (all failures are non-fatal) ────────────────────────
@@ -434,6 +436,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [commit],
   );
 
+  // Its own op, separate from the budget: if an account's database predates
+  // these columns, only this change is refused — the budget still saves.
+  const setFinances = useCallback<StoreValue["setFinances"]>(
+    (patch) => commit({ t: "profile", patch }),
+    [commit],
+  );
+
   const updateSettings = useCallback<StoreValue["updateSettings"]>(
     (patch) => commit({ t: "profile", patch }),
     [commit],
@@ -458,6 +467,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         markNoSpendDay,
         unmarkNoSpendDay,
         setBudget,
+        setFinances,
         updateSettings,
         loadData,
         reset,

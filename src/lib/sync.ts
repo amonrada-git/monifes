@@ -1,5 +1,14 @@
 import { supabase } from "./supabase";
-import { AppData, Budget, Settings, Spend, isBucket, isDifficulty, isFeeling } from "./types";
+import {
+  AppData,
+  Budget,
+  Settings,
+  Spend,
+  isBucket,
+  isDifficulty,
+  isFeeling,
+  sanitizeBudget,
+} from "./types";
 
 // ─── Ops: every change to the data, as a small idempotent record ──────────────
 //
@@ -13,9 +22,15 @@ export type Op =
   | { t: "spend.delete"; id: string }
   | { t: "day.add"; day: string }
   | { t: "day.remove"; day: string }
-  | { t: "profile"; patch: Partial<Settings> & { budget?: Budget | null } }
+  | { t: "profile"; patch: ProfilePatch }
   /** Wipe and replace everything — debug presets / reset only. */
   | { t: "replace"; data: AppData };
+
+export type ProfilePatch = Partial<Settings> & {
+  budget?: Budget | null;
+  income?: number | null;
+  baseline?: Budget | null;
+};
 
 export function applyOp(d: AppData, op: Op): AppData {
   switch (op.t) {
@@ -34,11 +49,13 @@ export function applyOp(d: AppData, op: Op): AppData {
     case "day.remove":
       return { ...d, noSpendDays: d.noSpendDays.filter((x) => x !== op.day) };
     case "profile": {
-      const { budget, ...settings } = op.patch;
+      const { budget, income, baseline, ...settings } = op.patch;
       return {
         ...d,
         settings: { ...d.settings, ...settings },
         budget: budget === undefined ? d.budget : budget,
+        income: income === undefined ? d.income : income,
+        baseline: baseline === undefined ? d.baseline : baseline,
       };
     }
     case "replace":
@@ -120,7 +137,15 @@ async function send(userId: string, op: Op): Promise<void> {
       const { data } = op;
       check(await sb.from("spends").delete().eq("user_id", userId));
       check(await sb.from("no_spend_days").delete().eq("user_id", userId));
-      check(await sb.from("profiles").upsert({ id: userId, ...data.settings, budget: data.budget }));
+      check(
+        await sb.from("profiles").upsert({
+          id: userId,
+          ...data.settings,
+          budget: data.budget,
+          income: data.income,
+          baseline: data.baseline,
+        }),
+      );
       if (data.spends.length)
         check(await sb.from("spends").insert(data.spends.map((s) => toSpendRow(userId, s))));
       if (data.noSpendDays.length)
@@ -198,7 +223,9 @@ async function fetchPaged<T>(
 export async function fetchAll(): Promise<AppData & { fresh: boolean }> {
   const sb = db();
   const [profile, spends, days] = await Promise.all([
-    sb.from("profiles").select("currency, difficulty, budget").maybeSingle(),
+    // "*" rather than a column list: an account whose database is missing a
+    // newer column (income, baseline) still loads instead of failing outright.
+    sb.from("profiles").select("*").maybeSingle(),
     fetchPaged<SpendRow>((from, to) =>
       sb
         .from("spends")
@@ -219,7 +246,9 @@ export async function fetchAll(): Promise<AppData & { fresh: boolean }> {
       currency: typeof p?.currency === "string" ? p.currency : "JPY",
       difficulty: isDifficulty(p?.difficulty) ? p.difficulty : "recommended",
     },
-    budget: (p?.budget as Budget | null) ?? null,
+    budget: sanitizeBudget(p?.budget),
+    income: typeof p?.income === "number" || typeof p?.income === "string" ? Number(p.income) || null : null,
+    baseline: sanitizeBudget(p?.baseline),
     spends: spends
       .filter((r) => isBucket(r.bucket) && isFeeling(r.feeling))
       .map((r) => ({
