@@ -163,8 +163,10 @@ quiet). Phone frame: iPhone 13 / 390px.
   then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
   light/medium/deep skin), **Hair** (women: bob, ponytail, curly, bun · men: short, side part,
   buzz cut, curly) and **Extras** (glasses: round, square, sunnies · hat: beanie, sun hat, cap).
-  Tiles show your own face with each option. 24 base portraits (`public/cast/`, one pose,
-  lined up by eyes and feet so hair never changes the size) + dress-up cut-outs
+  Tiles show your own face with each option. 24 base portraits (`public/cast/`): 8 drawings
+  (one per person × hair, lined up by eyes and feet) in light skin, re-tinted to medium and
+  deep by `scripts/art/recolor-skin.mjs` — so changing skin changes nothing else. Outfit is
+  one per person for now (women: cream knit + sage; men: sage hoodie + charcoal). Dress-up cut-outs
   (`public/dress/`) layered on top, placed from each portrait's measured eyes
   (`src/lib/cast-eyes.ts`, rules in `character.ts`). Drawn once with Figma AI in "monifes —
   clay art"; the line-up and cut-out scripts are in `scripts/art/`. No cost per person.
