@@ -187,7 +187,8 @@ quiet). Phone frame: iPhone 13 / 390px.
   today → becoming ring demo (3% → 20% of pay kept).
 - ✅ Onboarding layout: every step's main button sits in one fixed spot at the foot of the
   screen (a pinned footer of one height: button + a line below for a quiet link or note), and
-  the step scrolls under it.
+  the step scrolls under it. Scrolling down slides the footer away so the options are easy to
+  reach; scrolling up, or reaching the end, brings it back.
 - ✅ Onboarding "magic moment" (first run, or Becoming → Make my plan): take-home pay → a
   suggested four-bucket plan drawn as one ring (the Home ring's band, cut into the buckets;
   income no bucket covers stays as the bare track). Spending share by difficulty

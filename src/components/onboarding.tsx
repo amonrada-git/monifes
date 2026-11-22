@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -50,6 +50,20 @@ export function Onboarding({
   const { data, setBudget, setFinances, updateSettings } = useStore();
 
   const [step, setStep] = useState<Step>(startAt);
+  // The footer steps aside while you scroll down to reach the options, and
+  // comes back when you scroll up or reach the end. Remembered per step, so a
+  // new step always starts with its button showing.
+  const [footerAwayOn, setFooterAwayOn] = useState<Step | null>(null);
+  const lastTop = useRef(0);
+
+  function onScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    const delta = el.scrollTop - lastTop.current;
+    if (Math.abs(delta) < 6) return;
+    lastTop.current = el.scrollTop;
+    const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 8;
+    setFooterAwayOn(delta > 0 && !atEnd ? step : null);
+  }
   const [me] = useState(loadMe);
   const [name, setName] = useState(me.name);
   const [look, setLook] = useState<Look>(me.look);
@@ -143,7 +157,11 @@ export function Onboarding({
         </header>
       )}
 
-      <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto px-6">
+      <div
+        onScroll={onScroll}
+        data-footer={footerAwayOn === step ? "away" : "shown"}
+        className="group/steps no-scrollbar flex flex-1 flex-col overflow-y-auto px-6"
+      >
         {step === "hello" && (
           <div key="hello" className="rise flex flex-1 flex-col pt-14">
             <h1 className="text-[32px] font-medium leading-[1.15]">Welcome to monifes</h1>
@@ -539,7 +557,8 @@ function Line({ label, children }: { label: string; children: React.ReactNode })
 /**
  * The bottom of every step: pinned to the screen's foot, one height on every
  * screen — the main button, then a line below it (a quiet link, a note, or
- * nothing) — so the button never moves from step to step.
+ * nothing) — so the button never moves from step to step. Slides away while
+ * you scroll down (see `onScroll`).
  */
 function Footer({
   children,
@@ -554,6 +573,8 @@ function Footer({
     <div
       className={cn(
         "sticky bottom-0 z-10 -mx-6 mt-auto bg-linear-to-t from-background from-75% to-transparent px-6 pb-6 pt-6",
+        "transition duration-300 ease-out motion-reduce:transition-none",
+        "group-data-[footer=away]/steps:pointer-events-none group-data-[footer=away]/steps:translate-y-full group-data-[footer=away]/steps:opacity-0",
         className,
       )}
     >
