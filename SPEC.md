@@ -163,11 +163,14 @@ quiet). Phone frame: iPhone 13 / 390px.
   then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
   light/medium/deep skin), **Hair** (women: bob, ponytail, curly, bun · men: short, side part,
   buzz cut, curly) and **Extras** (glasses: round, square, sunnies).
-  Tiles show your own face with each option. 24 portraits in `public/people/`, all one body,
-  outfit (cream knit, sage trousers, white sneakers — men and women alike) and wave: each hair
-  style's head is set on one shared body per person (`scripts/art/head-swap.mjs`), and medium
-  and deep skin are re-tints of the light drawing (`scripts/art/recolor-skin.mjs`) — so changing
-  skin or hair changes nothing else. Glasses are cut-outs (`public/dress/`) placed from each
+  Tiles show your own face with each option. 24 portraits in `public/people/v3/` (bump the
+  folder when they change — cached old ones otherwise linger), all one body, outfit (cream
+  knit, sage trousers, white sneakers — men and women alike), wave and head tilt: each hair
+  style's head is turned to the body's tilt and set on one shared body per person (women: the
+  bun drawing; men: the short-hair drawing) by `scripts/art/head-swap.mjs`; medium and deep
+  skin are re-tints of the light drawing (`scripts/art/recolor-skin.mjs`, given the eyes); the
+  backdrop is smoothed by `scripts/art/smooth-backdrop.mjs`. Changing skin or hair changes
+  nothing else. The curly woman has chin-length curls (long curls fell behind the hand). Glasses are cut-outs (`public/dress/`) placed from each
   portrait's measured eyes (`src/lib/cast-eyes.ts`, rules in `character.ts`). Hats are drawn and
   placed too but parked (not offered) for now. Made once with Figma AI in "monifes — clay art";
   scripts in `scripts/art/`. No cost per person.

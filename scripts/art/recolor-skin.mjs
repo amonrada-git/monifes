@@ -1,9 +1,14 @@
-// Usage: node scripts/art/recolor-skin.mjs <light portrait.webp> <out.webp> <medium|deep>
+// Usage: node scripts/art/recolor-skin.mjs <light portrait.webp> <out.webp> <medium|deep> [lx ly rx ry]
+// (the eyes, if given, let it take every skin-coloured pixel of the head —
+// ears and the forehead under a fringe — which the smoothness test can miss)
 // Makes another skin tone from one drawing, so the pose never changes: finds
 // the skin by its warm, mid-saturated colour and re-tints it, keeping the
 // clay's shading (each pixel's brightness relative to the lit skin tone).
 import sharp from "sharp";
-const [src, out, tone] = process.argv.slice(2);
+const [src, out, tone, ...rest] = process.argv.slice(2);
+const debug = rest.includes("--mask"); // write the skin selection in red instead
+const eyeArgs = rest.filter((a) => a !== "--mask");
+const eyes = eyeArgs.length === 4 ? eyeArgs.map(Number) : null;
 const LIT = [237, 194, 158]; // lit light skin, e.g. a forehead
 const TONES = { medium: [214, 150, 104], deep: [150, 92, 60] };
 const T = TONES[tone];
@@ -68,6 +73,83 @@ for (let step = 1; step <= REACH && frontier.length; step++) {
   }
   frontier = next;
 }
+// The head itself: inside a disc around the face there's no knit to confuse
+// with skin, so every skin-coloured pixel there counts.
+if (eyes) {
+  const [lx, ly, rx, ry] = eyes;
+  const d = Math.hypot(rx - lx, ry - ly), cx = (lx + rx) / 2, cy = (ly + ry) / 2 + 0.2 * d, R = 1.55 * d;
+  const chin = (ly + ry) / 2 + 0.95 * d, collar = (ly + ry) / 2 + 1.2 * d;
+  for (let y = Math.max(0, Math.floor(cy - R)); y < Math.min(h, collar); y++)
+    for (let x = Math.max(0, Math.floor(cx - R)); x < Math.min(w, cx + R); x++) {
+      if ((x - cx) ** 2 + (y - cy) ** 2 > R * R) continue;
+      // below the chin, just the neck: narrow, and smooth (not the knit collar)
+      if (y > chin && (Math.abs(x - cx) > 0.38 * d || rough[y * w + x] > 6)) continue;
+      const [hh, ss, vv] = hsv((y * w + x) * 3);
+      // bright enough to be skin, not brown hair; below the chin (the neck)
+      // only clearly skin, not the knit collar
+      if ((hh < 36 || hh > 340) && ss > (y > chin ? 0.3 : 0.12) && ss < 0.72 && vv > 0.6 && L[y * w + x] > 145) m[y * w + x] = 1;
+    }
+}
+
+// Hands: whole patches of clearly skin-coloured pixels below the face — warm
+// and richly coloured on average, which the cream knit and its shadows aren't.
+{
+  // smooth, warm and bright: a hand (pale fingertips too), never the bumpy knit
+  const cand = (p) => { const [hh, ss, vv] = hsv(p * 3); return (hh < 33 || hh > 340) && ss > 0.08 && ss < 0.75 && vv > 0.55 && L[p] > 130 && rough[p] < 6; };
+  const mid = eyes ? (eyes[0] + eyes[2]) / 2 : w / 2;
+  const dEye = eyes ? Math.hypot(eyes[2] - eyes[0], eyes[3] - eyes[1]) : 64;
+  const seen = new Uint8Array(w * h);
+  const top = eyes ? (eyes[1] + eyes[3]) / 2 + 0.6 * Math.hypot(eyes[2] - eyes[0], eyes[3] - eyes[1]) : 0;
+  for (let p0 = Math.floor(top) * w; p0 < w * h; p0++) {
+    if (seen[p0] || !cand(p0)) continue;
+    const blob = [], q = [p0];
+    seen[p0] = 1;
+    let satSum = 0, x0 = w, x1 = 0, y0 = h, y1 = 0;
+    while (q.length) {
+      const p = q.pop(); blob.push(p); satSum += hsv(p * 3)[1];
+      const bx = p % w, by = (p / w) | 0;
+      x0 = Math.min(x0, bx); x1 = Math.max(x1, bx); y0 = Math.min(y0, by); y1 = Math.max(y1, by);
+      const x = p % w;
+      for (const n of [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, p - w, p + w])
+        if (n >= top * w && n < w * h && !seen[n] && cand(n)) { seen[n] = 1; q.push(n); }
+    }
+    const handSized = x1 - x0 < 1.5 * dEye && y1 - y0 < 1.7 * dEye;
+    // hands are out to the sides — never the collar under the chin
+    const aside = Math.abs((x0 + x1) / 2 - mid) > 0.7 * dEye;
+    if (handSized && aside && blob.length >= 60 && satSum / blob.length > 0.3) {
+      for (const p of blob) m[p] = 1;
+      // the pale highlight on a fingertip is still hand — looking only toward
+      // the fingertips (up for the wave, down for the hand at the side), never
+      // toward the cuff
+      const waving = eyes && (y0 + y1) / 2 < (eyes[1] + eyes[3]) / 2 + 1.6 * dEye;
+      const ya = waving ? y0 - 6 : y0, yb = waving ? y1 : y1 + 6;
+      for (let y = Math.max(0, ya); y <= Math.min(h - 1, yb); y++)
+        for (let x = Math.max(0, x0 - 6); x <= Math.min(w - 1, x1 + 6); x++) {
+          const q = y * w + x;
+          const [hh, ss] = hsv(q * 3);
+          const off = Math.abs(data[q * 3] - 0xec) + Math.abs(data[q * 3 + 1] - 0xeb) + Math.abs(data[q * 3 + 2] - 0xe6);
+          if (!m[q] && hh < 45 && ss > 0.04 && off > 18 && rough[q] < 9) m[q] = 1;
+        }
+    }
+  }
+}
+
+// A last veto below the face: the knit's warm shadows (hue 32+, softer
+// colour) are never skin; skin is either richly coloured, or warm-hued.
+if (eyes) {
+  const [lx, ly, rx, ry] = eyes;
+  const d = Math.hypot(rx - lx, ry - ly), cx = (lx + rx) / 2, cy = (ly + ry) / 2 + 0.2 * d, R = 1.55 * d;
+  const chinLine = (ly + ry) / 2 + 0.95 * d;
+  for (let p = 0; p < w * h; p++) {
+    if (!m[p]) continue;
+    const x = p % w, y = (p / w) | 0;
+    if ((x - cx) ** 2 + (y - cy) ** 2 <= R * R && y < chinLine) continue; // the face: already careful
+    const [hh, ss] = hsv(p * 3);
+    const warm = hh < 30 || hh > 340;
+    if (!(ss > 0.33 || (warm && ss > 0.15))) m[p] = 0;
+  }
+}
+
 // Fill holes inside the skin (around eyes and mouth, where it's too detailed to
 // pass as smooth) — leaving very dark bits (eyes, mouth) and glints alone —
 // then creep 6px onto the edges so no light rim is left.
@@ -107,14 +189,29 @@ for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
   soft[y * w + x] = Math.max(m[y * w + x], s / n);
 }
 const o = Buffer.alloc(w * h * 3);
+// An edge pixel is part skin, part background: separate the two, tint only
+// the skin part, and mix them back — or the edge glows as bright skin.
+const BG = [0xec, 0xeb, 0xe6];
+const span = Math.hypot(LIT[0] - BG[0], LIT[1] - BG[1], LIT[2] - BG[2]);
 for (let i = 0, p = 0; p < w * h; i += 3, p++) {
-  const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+  const px = [data[i], data[i + 1], data[i + 2]];
   const k = soft[p];
-  const shade = lum(r, g, b) / Lref;
+  if (!k) { o[i] = px[0]; o[i + 1] = px[1]; o[i + 2] = px[2]; continue; }
+  // only the true outline (touching the backdrop) is part backdrop; inside,
+  // even a pale highlight is skin
+  const nearBg = [-2, -1, 1, 2].some((k) =>
+    [p + k, p + k * w].some(
+      (q) => q >= 0 && q < w * h && Math.abs(data[q * 3] - BG[0]) + Math.abs(data[q * 3 + 1] - BG[1]) + Math.abs(data[q * 3 + 2] - BG[2]) < 14,
+    ),
+  );
+  const a = nearBg ? Math.min(1, Math.hypot(px[0] - BG[0], px[1] - BG[1], px[2] - BG[2]) / span) : 1;
+  const skinPart = a > 0.05 ? px.map((v, c) => BG[c] + (v - BG[c]) / a) : px;
+  const shade = Math.min(1.25, lum(...skinPart) / Lref);
   for (let c = 0; c < 3; c++) {
-    const tinted = Math.min(255, T[c] * shade);
-    o[i + c] = Math.round(data[i + c] * (1 - k) + tinted * k);
+    const tinted = BG[c] * (1 - a) + Math.min(255, T[c] * shade) * a;
+    o[i + c] = Math.round(px[c] * (1 - k) + tinted * k);
   }
 }
+if (debug) for (let p = 0; p < w * h; p++) if (soft[p] > 0.5) { o[p * 3] = 230; o[p * 3 + 1] = 30; o[p * 3 + 2] = 30; }
 await sharp(o, { raw: { width: w, height: h, channels: 3 } }).webp({ quality: 82 }).toFile(out);
 console.log(out);

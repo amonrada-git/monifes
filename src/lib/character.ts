@@ -74,7 +74,8 @@ export function hairFor(person: Person, hair: string): Hair {
 const castId = (look: Pick<Look, "person" | "skin" | "hair">) =>
   `${look.person}-${look.skin}-${hairFor(look.person, look.hair)}`;
 
-export const castSrc = (look: Pick<Look, "person" | "skin" | "hair">) => `/people/${castId(look)}.webp`;
+// Bump the folder when the pictures change, so no cached old ones are shown.
+export const castSrc = (look: Pick<Look, "person" | "skin" | "hair">) => `/people/v3/${castId(look)}.webp`;
 
 // ─── Dress-up placement ──────────────────────────────────────────────────────
 // Sizes are in eye-distances; `at` centres an item on the eyes, `bottom` puts
