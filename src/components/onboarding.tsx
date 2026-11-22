@@ -12,9 +12,11 @@ import { AmountDisplay, Keypad, useAmountInput } from "./keypad";
 import { PlanRing, RingKey, Swatch, WealthShare, useCountUp } from "./plan-ring";
 import { WelcomeScenes } from "./welcome-scenes";
 import { CharacterBuilder } from "./character-builder";
+import { MakingYou } from "./making-you";
 import { loadMe, saveMe, type Look } from "@/lib/character";
+import { keepPortrait } from "@/lib/clay-you";
 
-type Step = "hello" | "look" | "welcome" | "income" | "plan" | "now" | "compare";
+type Step = "hello" | "look" | "making" | "welcome" | "income" | "plan" | "now" | "compare";
 const STEPS: Step[] = ["income", "plan", "now", "compare"];
 
 const SEEN_KEY = "monifes:onboarding:seen";
@@ -103,6 +105,7 @@ export function Onboarding({
 
   const back: Partial<Record<Step, Step>> = {
     look: "hello",
+    making: "look",
     income: startAt === "hello" ? "welcome" : undefined,
     plan: "income",
     now: "plan",
@@ -177,21 +180,36 @@ export function Onboarding({
             <h1 className="text-[28px] font-medium leading-tight">
               What do you look like, {name.trim()}?
             </h1>
-            <p className="mt-2 text-sm text-muted">Make a little you. You can change it any time.</p>
+            <p className="mt-2 text-sm text-muted">
+              We’ll make a little clay you. You can change it any time.
+            </p>
             <div className="mt-5">
-              <CharacterBuilder look={look} onChange={setLook} name={name.trim()} />
+              <CharacterBuilder look={look} onChange={setLook} />
             </div>
             <div className="mt-auto pt-2">
               <PrimaryButton
                 onClick={() => {
                   saveMe({ name: name.trim(), look });
-                  setStep("welcome");
+                  setStep("making");
                 }}
               >
-                That’s me
+                Make me
               </PrimaryButton>
             </div>
           </div>
+        )}
+
+        {step === "making" && (
+          <MakingYou
+            look={look}
+            name={name.trim()}
+            onKeep={(pic) => {
+              keepPortrait(look, pic);
+              setStep("welcome");
+            }}
+            onEdit={() => setStep("look")}
+            onSkip={() => setStep("welcome")}
+          />
         )}
 
         {step === "welcome" && (

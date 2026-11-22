@@ -3,48 +3,47 @@
 import { useState } from "react";
 import { Shuffle } from "lucide-react";
 import {
-  EXTRAS,
-  EYES,
+  AGES,
   GLASSES,
-  HAIR_TONES,
+  HAIR_COLORS,
   HAIRS,
   ITEMS,
-  TOPS,
+  OUTFIT_COLORS,
+  OUTFITS,
+  PEOPLE,
+  SKINS,
   randomLook,
+  summary,
   type Look,
 } from "@/lib/character";
 import { cn } from "@/lib/utils";
-import { Avatar } from "./avatar";
 
-const TABS = ["Hair", "Face", "Body", "Glasses", "Item"] as const;
+const TABS = ["You", "Hair", "Outfit", "Extras"] as const;
 type Tab = (typeof TABS)[number];
 
+type Opt = { key: string; label: string; hex?: string };
+
 /**
- * Make a little you: your character on a raised card, a tray of parts
- * underneath. Every tile shows you wearing that option.
+ * Describe yourself in a few taps. The card on top reads your choices back;
+ * your clay you is made from them when you're done.
  */
 export function CharacterBuilder({
   look,
   onChange,
-  name,
 }: {
   look: Look;
   onChange: (l: Look) => void;
-  name: string;
 }) {
-  const [tab, setTab] = useState<Tab>("Hair");
+  const [tab, setTab] = useState<Tab>("You");
   const set = (patch: Partial<Look>) => onChange({ ...look, ...patch });
 
   return (
     <div className="flex flex-col">
-      <div className="raised relative flex h-[min(280px,34dvh)] items-end justify-center overflow-hidden rounded-[28px]">
-        <Avatar
-          key={JSON.stringify(look)}
-          look={look}
-          alive
-          label={`${name || "Your"} character`}
-          className="pop h-[92%] w-auto"
-        />
+      <div className="raised relative flex min-h-[132px] flex-col justify-center rounded-[28px] px-6 py-5">
+        <p className="text-[13px] text-muted">Your clay you will be</p>
+        <p key={summary(look)} className="rise mt-1.5 pr-10 text-[19px] font-medium leading-snug">
+          {summary(look)}
+        </p>
         <button
           onClick={() => onChange(randomLook())}
           aria-label="Surprise me"
@@ -71,75 +70,113 @@ export function CharacterBuilder({
         ))}
       </div>
 
-      <div className="mt-4 flex flex-col gap-4" role="tabpanel">
+      <div className="mt-5 flex flex-col gap-5" role="tabpanel">
+        {tab === "You" && (
+          <>
+            <Keys label="I'm a" options={PEOPLE} value={look.person} onPick={(person) => set({ person })} />
+            <Keys label="Age" options={AGES} value={look.age} onPick={(age) => set({ age })} />
+            <Swatches label="Skin" options={SKINS} value={look.skin} onPick={(skin) => set({ skin })} />
+          </>
+        )}
         {tab === "Hair" && (
           <>
-            <Tiles crop="head" look={look} options={HAIRS} field="hair" onPick={set} />
-            <Tiles crop="head" look={look} options={HAIR_TONES} field="hairTone" onPick={set} label="Colour" />
+            <Keys label="Style" options={HAIRS} value={look.hair} onPick={(hair) => set({ hair })} />
+            {look.hair !== "bald" && (
+              <Swatches
+                label="Colour"
+                options={HAIR_COLORS}
+                value={look.hairColor}
+                onPick={(hairColor) => set({ hairColor })}
+              />
+            )}
           </>
         )}
-        {tab === "Face" && (
+        {tab === "Outfit" && (
           <>
-            <Tiles crop="head" look={look} options={EYES} field="eyes" onPick={set} label="Eyes" />
-            <Tiles crop="head" look={look} options={EXTRAS} field="extra" onPick={set} label="Extras" />
+            <Keys label="Wearing" options={OUTFITS} value={look.outfit} onPick={(outfit) => set({ outfit })} />
+            <Swatches
+              label="Colour"
+              options={OUTFIT_COLORS}
+              value={look.outfitColor}
+              onPick={(outfitColor) => set({ outfitColor })}
+            />
           </>
         )}
-        {tab === "Body" && <Tiles look={look} options={TOPS} field="top" onPick={set} />}
-        {tab === "Glasses" && (
-          <Tiles crop="head" look={look} options={GLASSES} field="glasses" onPick={set} />
+        {tab === "Extras" && (
+          <>
+            <Keys label="Glasses" options={GLASSES} value={look.glasses} onPick={(glasses) => set({ glasses })} />
+            <Keys label="Holding" options={ITEMS} value={look.item} onPick={(item) => set({ item })} />
+          </>
         )}
-        {tab === "Item" && <Tiles look={look} options={ITEMS} field="item" onPick={set} />}
       </div>
     </div>
   );
 }
 
-function Tiles<F extends keyof Look>({
-  look,
-  options,
-  field,
-  onPick,
-  crop = "bust",
+function Keys<K extends string>({
   label,
+  options,
+  value,
+  onPick,
 }: {
-  look: Look;
-  options: { key: Look[F]; label: string }[];
-  field: F;
-  onPick: (patch: Partial<Look>) => void;
-  crop?: "bust" | "head";
-  label?: string;
+  label: string;
+  options: readonly (Opt & { key: K })[];
+  value: K;
+  onPick: (k: K) => void;
 }) {
   return (
     <div>
-      {label && <p className="mb-2 text-[13px] text-muted">{label}</p>}
-      <div role="radiogroup" aria-label={label ?? field} className="grid grid-cols-3 gap-2.5">
-        {options.map((o) => {
-          const on = look[field] === o.key;
-          return (
-            <button
-              key={o.key}
-              role="radio"
-              aria-checked={on}
-              onClick={() => onPick({ [field]: o.key } as Partial<Look>)}
-              className={cn(
-                "raised flex aspect-square flex-col items-center overflow-hidden rounded-2xl pb-1.5 transition active:scale-[0.97]",
-                on && "ring-2 ring-foreground",
-              )}
-            >
-              <span className="flex min-h-0 w-full flex-1 items-end justify-center">
-                <Avatar
-                  // a close-up of the head leaves out whatever you're holding
-                  look={{ ...look, ...(crop === "head" && { item: "none" }), [field]: o.key }}
-                  crop={crop}
-                  className="h-full w-auto"
-                />
-              </span>
-              <span className={cn("text-[11px]", on ? "text-foreground" : "text-muted")}>
-                {o.label}
-              </span>
-            </button>
-          );
-        })}
+      <p className="mb-2 text-[13px] text-muted">{label}</p>
+      <div role="radiogroup" aria-label={label} className="tray flex flex-wrap gap-1 rounded-2xl p-1">
+        {options.map((o) => (
+          <button
+            key={o.key}
+            role="radio"
+            aria-checked={value === o.key}
+            onClick={() => onPick(o.key)}
+            className={cn(
+              "h-9 grow rounded-xl px-3.5 text-[13px] transition",
+              value === o.key ? "key-on" : "text-muted",
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Swatches<K extends string>({
+  label,
+  options,
+  value,
+  onPick,
+}: {
+  label: string;
+  options: readonly (Opt & { key: K })[];
+  value: K;
+  onPick: (k: K) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-[13px] text-muted">{label}</p>
+      <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-3">
+        {options.map((o) => (
+          <button
+            key={o.key}
+            role="radio"
+            aria-checked={value === o.key}
+            aria-label={o.label}
+            title={o.label}
+            onClick={() => onPick(o.key)}
+            className={cn(
+              "h-10 w-10 rounded-full shadow-[inset_0_-2px_3px_rgba(0,0,0,0.15),inset_0_2px_2px_rgba(255,255,255,0.35)] transition active:scale-95",
+              value === o.key && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+            )}
+            style={{ background: o.hex }}
+          />
+        ))}
       </div>
     </div>
   );
