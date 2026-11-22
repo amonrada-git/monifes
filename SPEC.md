@@ -159,6 +159,11 @@ quiet). Phone frame: iPhone 13 / 390px.
   skipped; date/shop/amount columns guessed then confirmable; payments & refunds left out; each
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
+- ✅ Welcome: "See who you could become." — 3D clay scenes of one original character
+  (Wealthier · Abundant · At peace) that crossfade, with a tray to pick one. Art generated
+  with Figma AI in the Signary team file "monifes — clay art" (ydtxVcnpFQreMj7ip1y4Pi),
+  shipped as 720px WebP in `public/welcome/`. Becoming's no-plan card shows the
+  today → becoming ring demo (3% → 20% of pay kept).
 - ✅ Onboarding "magic moment" (first run, or Becoming → Make my plan): take-home pay → a
   suggested four-bucket plan drawn as one ring (the Home ring's band, cut into the buckets;
   income no bucket covers stays as the bare track). Spending share by difficulty

@@ -10,7 +10,7 @@ import { needShare, planParts, spendingOf, suggestPlan, totalOf, wealthOf } from
 import { cn } from "@/lib/utils";
 import { AmountDisplay, Keypad, useAmountInput } from "./keypad";
 import { PlanRing, RingKey, Swatch, WealthShare, useCountUp } from "./plan-ring";
-import { BecomingDemo } from "./becoming-demo";
+import { WelcomeScenes } from "./welcome-scenes";
 
 type Step = "welcome" | "income" | "plan" | "now" | "compare";
 const STEPS: Step[] = ["income", "plan", "now", "compare"];
@@ -254,20 +254,18 @@ export function Onboarding({
 
 function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void }) {
   return (
-    <div className="rise flex flex-1 flex-col pt-14">
+    <div className="rise flex flex-1 flex-col pt-10">
       <p className="text-sm text-muted">monifes</p>
       <h1 className="mt-3 text-[32px] font-medium leading-[1.15]">
         See who you could become.
       </h1>
       <p className="mt-3 text-pretty text-[15px] leading-relaxed text-muted">
-        Start with what you take home each month, and watch your path take shape. Only you can
-        see it.
+        It starts with what you take home each month. Only you can see it.
       </p>
 
-      {/* TODO(art): the 3D clay "who you could become" scenes replace this. */}
-      <BecomingDemo className="mt-10" />
+      <WelcomeScenes className="mt-6" />
 
-      <div className="mt-auto pt-10">
+      <div className="mt-auto pt-6">
         <PrimaryButton onClick={onBegin}>Begin</PrimaryButton>
         <button onClick={onSkip} className="mt-3 w-full text-center text-sm text-muted">
           Skip for now
