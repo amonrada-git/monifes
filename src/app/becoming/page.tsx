@@ -8,6 +8,7 @@ import { bucketTotals, spendsInMonth } from "@/lib/compute";
 import { planParts, totalOf, wealthOf } from "@/lib/plan";
 import { Card, SectionLabel } from "@/components/ui";
 import { PlanRing, RingKey, Swatch, WealthShare } from "@/components/plan-ring";
+import { BecomingDemo } from "@/components/becoming-demo";
 import { Onboarding } from "@/components/onboarding";
 
 export default function BecomingPage() {
@@ -41,7 +42,7 @@ export default function BecomingPage() {
 
       {!plan ? (
         <Card className="mt-5">
-          <PlanRing parts={[]} size="sm" label="An empty ring, waiting for your plan" className="mt-2" />
+          <BecomingDemo className="mt-1" />
           <p className="mt-6 text-[17px] font-medium">Make a plan from one number</p>
           <p className="mt-1 text-sm leading-relaxed text-muted">
             Tell monifes what you take home each month and it suggests how much to spend, invest

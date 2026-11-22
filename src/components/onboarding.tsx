@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -10,6 +10,7 @@ import { needShare, planParts, spendingOf, suggestPlan, totalOf, wealthOf } from
 import { cn } from "@/lib/utils";
 import { AmountDisplay, Keypad, useAmountInput } from "./keypad";
 import { PlanRing, RingKey, Swatch, WealthShare, useCountUp } from "./plan-ring";
+import { BecomingDemo } from "./becoming-demo";
 
 type Step = "welcome" | "income" | "plan" | "now" | "compare";
 const STEPS: Step[] = ["income", "plan", "now", "compare"];
@@ -251,32 +252,7 @@ export function Onboarding({
   return host ? createPortal(screen, host) : screen;
 }
 
-/**
- * A sample month, shares of pay: a typical "today" that keeps almost nothing,
- * and the plan it could become. Only for the welcome demo.
- */
-const SAMPLE: Record<"today" | "becoming", Budget> = {
-  today: { necessities: 62, "guilt-free": 33, investments: 0, savings: 3 },
-  becoming: { necessities: 56, "guilt-free": 24, investments: 10, savings: 10 },
-};
-
-const reducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void }) {
-  // The demo plays on its own until someone taps a side; with reduced motion
-  // it simply shows where you could be.
-  const [phase, setPhase] = useState<"today" | "becoming">(() =>
-    reducedMotion() ? "becoming" : "today",
-  );
-  const [playing, setPlaying] = useState(() => !reducedMotion());
-  useEffect(() => {
-    if (!playing) return;
-    const id = setInterval(() => setPhase((p) => (p === "today" ? "becoming" : "today")), 2600);
-    return () => clearInterval(id);
-  }, [playing]);
-  const kept = useCountUp(wealthOf(SAMPLE[phase]));
-
   return (
     <div className="rise flex flex-1 flex-col pt-14">
       <p className="text-sm text-muted">monifes</p>
@@ -288,42 +264,8 @@ function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void 
         see it.
       </p>
 
-      {/* Today → becoming: the same month, reshaped. */}
-      <div className="mt-10 flex flex-col items-center">
-        <div className="raised rounded-full p-4">
-          <PlanRing
-            parts={planParts(SAMPLE[phase], 100)}
-            label={
-              phase === "today"
-                ? "A sample month today: 3% of pay kept"
-                : "The same month on a plan: 20% of pay kept"
-            }
-          >
-            <span className="text-xs text-muted">{phase === "today" ? "Today" : "Becoming"}</span>
-            <span className="tnum mt-0.5 text-[34px] font-medium leading-none">
-              {Math.round(kept)}%
-            </span>
-            <span className="mt-1 text-xs text-muted">of pay kept</span>
-          </PlanRing>
-        </div>
-        <div className="tray mt-6 inline-flex gap-1 rounded-2xl p-1">
-          {(["today", "becoming"] as const).map((p) => (
-            <button
-              key={p}
-              onClick={() => {
-                setPlaying(false);
-                setPhase(p);
-              }}
-              className={cn(
-                "h-9 rounded-xl px-5 text-sm transition",
-                phase === p ? "key-on" : "text-muted",
-              )}
-            >
-              {p === "today" ? "Today" : "Becoming"}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* TODO(art): the 3D clay "who you could become" scenes replace this. */}
+      <BecomingDemo className="mt-10" />
 
       <div className="mt-auto pt-10">
         <PrimaryButton onClick={onBegin}>Begin</PrimaryButton>
