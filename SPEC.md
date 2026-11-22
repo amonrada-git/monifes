@@ -160,11 +160,13 @@ quiet). Phone frame: iPhone 13 / 390px.
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - 🧪 Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
-  then "What do you look like?" — a live 3D clay figure (three.js, lazy-loaded; `src/lib/clay.ts`)
-  built from Hair (style + colour) · Skin · Outfit (style + colour) · Glasses · Item, with tile
-  previews rendered from the figure and a Surprise-me shuffle. Saved locally under
-  `monifes:me:v1` for now (not yet synced). Next: put *your* figure into the welcome album
-  (clay scene backdrops with no person) so it isn't always the same woman.
+  then "What do you look like?" — build a little you in simple ink line art (an SVG bust in
+  layers, `src/components/avatar.tsx`): Hair (9 styles, dark or light) · Face (eyes, extras:
+  blush, freckles, mustache, beard) · Body (6 tops) · Glasses · Item (coffee, plant, a cat on
+  your shoulder, book, camera). Every tile shows you wearing that option; Surprise-me shuffle;
+  blinks now and then. Saved locally under `monifes:me:v1` for now (not yet synced). (A 3D clay
+  figure was tried first and dropped: not cute enough.) Next: the welcome album in the same
+  line style, with *you* in each moment.
 - ✅ Welcome: "See who you could become." — an album of 3D clay photos of one original
   character, wealth as more than money: more time with family · free to travel · building
   your own thing · living in abundance · at peace with money · watching your wealth grow.

@@ -1,18 +1,31 @@
-// ─── You, in clay ─────────────────────────────────────────────────────────────
-// The little figure people make of themselves at the start. Options are keys
-// into the palettes below so saved looks survive palette tweaks.
+// ─── You, in ink ──────────────────────────────────────────────────────────────
+// The little character people make of themselves at the start: simple line
+// drawings in the app's one ink, stacked as layers. Options are keys so saved
+// looks survive changes to the drawings.
 
-export type HairStyle = "short" | "buzz" | "bob" | "long" | "bun" | "curly";
-export type TopStyle = "tee" | "hoodie" | "shirt" | "dress";
+export type Hair =
+  | "bob"
+  | "short"
+  | "curly"
+  | "long"
+  | "bun"
+  | "ponytail"
+  | "crop"
+  | "beanie"
+  | "bald";
+export type HairTone = "dark" | "light";
+export type Eyes = "dots" | "happy" | "lashes" | "big" | "sleepy";
+export type Extra = "none" | "blush" | "freckles" | "mustache" | "beard";
+export type Top = "tee" | "shirt" | "hoodie" | "knit" | "turtleneck" | "overalls";
 export type Glasses = "none" | "round" | "square" | "sunnies";
-export type Item = "none" | "coffee" | "plant" | "camera" | "book";
+export type Item = "none" | "coffee" | "plant" | "cat" | "book" | "camera";
 
 export interface Look {
-  hair: HairStyle;
-  hairColor: string;
-  skin: string;
-  top: TopStyle;
-  topColor: string;
+  hair: Hair;
+  hairTone: HairTone;
+  eyes: Eyes;
+  extra: Extra;
+  top: Top;
   glasses: Glasses;
   item: Item;
 }
@@ -22,72 +35,72 @@ export interface Me {
   look: Look;
 }
 
-/** Clay tones, lightest to deepest. */
-export const SKIN: Record<string, string> = {
-  porcelain: "#f7dfca",
-  light: "#efc9a4",
-  warm: "#dfab80",
-  tan: "#c68b5e",
-  brown: "#9f6841",
-  deep: "#6b4329",
-};
+type Options<K extends string> = { key: K; label: string }[];
 
-export const HAIR_COLOR: Record<string, string> = {
-  black: "#2a2421",
-  espresso: "#4b2f21",
-  chestnut: "#7c4a2a",
-  honey: "#c8915a",
-  silver: "#bdb8b0",
-  rose: "#e3a3a6",
-};
-
-export const TOP_COLOR: Record<string, string> = {
-  cream: "#efe6d6",
-  sage: "#9fb08c",
-  sky: "#9cb8d0",
-  butter: "#ecd27f",
-  terracotta: "#d68a68",
-  lilac: "#b6a7d0",
-  charcoal: "#3f3c3a",
-};
-
-export const HAIR_STYLES: { key: HairStyle; label: string }[] = [
-  { key: "short", label: "Short" },
-  { key: "buzz", label: "Buzz" },
+export const HAIRS: Options<Hair> = [
   { key: "bob", label: "Bob" },
+  { key: "short", label: "Short" },
+  { key: "curly", label: "Curly" },
   { key: "long", label: "Long" },
   { key: "bun", label: "Bun" },
-  { key: "curly", label: "Curly" },
+  { key: "ponytail", label: "Ponytail" },
+  { key: "crop", label: "Crop" },
+  { key: "beanie", label: "Beanie" },
+  { key: "bald", label: "Bald" },
 ];
 
-export const TOP_STYLES: { key: TopStyle; label: string }[] = [
+export const HAIR_TONES: Options<HairTone> = [
+  { key: "dark", label: "Dark" },
+  { key: "light", label: "Light" },
+];
+
+export const EYES: Options<Eyes> = [
+  { key: "dots", label: "Dots" },
+  { key: "happy", label: "Happy" },
+  { key: "lashes", label: "Lashes" },
+  { key: "big", label: "Big" },
+  { key: "sleepy", label: "Sleepy" },
+];
+
+export const EXTRAS: Options<Extra> = [
+  { key: "none", label: "None" },
+  { key: "blush", label: "Blush" },
+  { key: "freckles", label: "Freckles" },
+  { key: "mustache", label: "Mustache" },
+  { key: "beard", label: "Beard" },
+];
+
+export const TOPS: Options<Top> = [
   { key: "tee", label: "Tee" },
-  { key: "hoodie", label: "Hoodie" },
   { key: "shirt", label: "Shirt" },
-  { key: "dress", label: "Dress" },
+  { key: "hoodie", label: "Hoodie" },
+  { key: "knit", label: "Black knit" },
+  { key: "turtleneck", label: "Turtleneck" },
+  { key: "overalls", label: "Overalls" },
 ];
 
-export const GLASSES: { key: Glasses; label: string }[] = [
+export const GLASSES: Options<Glasses> = [
   { key: "none", label: "None" },
   { key: "round", label: "Round" },
   { key: "square", label: "Square" },
   { key: "sunnies", label: "Sunnies" },
 ];
 
-export const ITEMS: { key: Item; label: string }[] = [
+export const ITEMS: Options<Item> = [
   { key: "none", label: "None" },
   { key: "coffee", label: "Coffee" },
   { key: "plant", label: "Plant" },
-  { key: "camera", label: "Camera" },
+  { key: "cat", label: "Cat" },
   { key: "book", label: "Book" },
+  { key: "camera", label: "Camera" },
 ];
 
 export const DEFAULT_LOOK: Look = {
-  hair: "short",
-  hairColor: "black",
-  skin: "light",
+  hair: "bob",
+  hairTone: "dark",
+  eyes: "dots",
+  extra: "blush",
   top: "tee",
-  topColor: "cream",
   glasses: "none",
   item: "none",
 };
@@ -97,29 +110,29 @@ const pick = <T,>(xs: readonly T[]) => xs[Math.floor(Math.random() * xs.length)]
 /** A fresh, random you, for "Surprise me". */
 export function randomLook(): Look {
   return {
-    hair: pick(HAIR_STYLES).key,
-    hairColor: pick(Object.keys(HAIR_COLOR)),
-    skin: pick(Object.keys(SKIN)),
-    top: pick(TOP_STYLES).key,
-    topColor: pick(Object.keys(TOP_COLOR)),
+    hair: pick(HAIRS).key,
+    hairTone: Math.random() < 0.8 ? "dark" : "light",
+    eyes: pick(EYES).key,
+    extra: Math.random() < 0.5 ? "none" : pick(EXTRAS).key,
+    top: pick(TOPS).key,
     glasses: Math.random() < 0.6 ? "none" : pick(GLASSES).key,
-    item: pick(ITEMS).key,
+    item: Math.random() < 0.3 ? "none" : pick(ITEMS).key,
   };
 }
 
 // Unknown keys (an older or newer app version) fall back to the default.
 function sanitizeLook(v: unknown): Look {
   const r = (v && typeof v === "object" ? v : {}) as Partial<Record<keyof Look, unknown>>;
-  const one = <T extends string>(x: unknown, ok: readonly T[], d: T): T =>
-    ok.includes(x as T) ? (x as T) : d;
+  const one = <K extends string>(x: unknown, ok: Options<K>, d: K): K =>
+    ok.some((o) => o.key === x) ? (x as K) : d;
   return {
-    hair: one(r.hair, HAIR_STYLES.map((x) => x.key), DEFAULT_LOOK.hair),
-    hairColor: one(r.hairColor, Object.keys(HAIR_COLOR), DEFAULT_LOOK.hairColor),
-    skin: one(r.skin, Object.keys(SKIN), DEFAULT_LOOK.skin),
-    top: one(r.top, TOP_STYLES.map((x) => x.key), DEFAULT_LOOK.top),
-    topColor: one(r.topColor, Object.keys(TOP_COLOR), DEFAULT_LOOK.topColor),
-    glasses: one(r.glasses, GLASSES.map((x) => x.key), DEFAULT_LOOK.glasses),
-    item: one(r.item, ITEMS.map((x) => x.key), DEFAULT_LOOK.item),
+    hair: one(r.hair, HAIRS, DEFAULT_LOOK.hair),
+    hairTone: one(r.hairTone, HAIR_TONES, DEFAULT_LOOK.hairTone),
+    eyes: one(r.eyes, EYES, DEFAULT_LOOK.eyes),
+    extra: one(r.extra, EXTRAS, DEFAULT_LOOK.extra),
+    top: one(r.top, TOPS, DEFAULT_LOOK.top),
+    glasses: one(r.glasses, GLASSES, DEFAULT_LOOK.glasses),
+    item: one(r.item, ITEMS, DEFAULT_LOOK.item),
   };
 }
 
