@@ -39,9 +39,13 @@ export function CharacterBuilder({
 
   return (
     <div className="flex flex-col">
-      <div className="raised relative flex min-h-[132px] flex-col justify-center rounded-[28px] px-6 py-5">
+      {/* A fixed height, so the controls below never shift as the summary grows */}
+      <div className="raised relative h-[156px] shrink-0 rounded-[28px] px-6 py-5">
         <p className="text-[13px] text-muted">Your clay you will be</p>
-        <p key={summary(look)} className="rise mt-1.5 pr-10 text-[19px] font-medium leading-snug">
+        <p
+          key={summary(look)}
+          className="rise mt-1.5 line-clamp-4 pr-10 text-[17px] font-medium leading-[1.35]"
+        >
           {summary(look)}
         </p>
         <button
