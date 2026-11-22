@@ -11,8 +11,10 @@ import { cn } from "@/lib/utils";
 import { AmountDisplay, Keypad, useAmountInput } from "./keypad";
 import { PlanRing, RingKey, Swatch, WealthShare, useCountUp } from "./plan-ring";
 import { WelcomeScenes } from "./welcome-scenes";
+import { CharacterBuilder } from "./character-builder";
+import { loadMe, saveMe, type Look } from "@/lib/character";
 
-type Step = "welcome" | "income" | "plan" | "now" | "compare";
+type Step = "hello" | "look" | "welcome" | "income" | "plan" | "now" | "compare";
 const STEPS: Step[] = ["income", "plan", "now", "compare"];
 
 const SEEN_KEY = "monifes:onboarding:seen";
@@ -33,12 +35,13 @@ function markSeen() {
 }
 
 /**
- * The first-run "magic moment": one number — take-home pay — becomes a
- * four-bucket plan drawn as 100 dots, then sits next to where the money goes
- * today. Each step saves as it goes, so leaving early keeps what's done.
+ * The first run: you name and make a little clay you, then one number —
+ * take-home pay — becomes a four-bucket plan drawn as a ring, set next to
+ * where the money goes today. Each step saves as it goes, so leaving early
+ * keeps what's done.
  */
 export function Onboarding({
-  startAt = "welcome",
+  startAt = "hello",
   onDone,
 }: {
   startAt?: Step;
@@ -47,6 +50,9 @@ export function Onboarding({
   const { data, setBudget, setFinances, updateSettings } = useStore();
 
   const [step, setStep] = useState<Step>(startAt);
+  const [me] = useState(loadMe);
+  const [name, setName] = useState(me.name);
+  const [look, setLook] = useState<Look>(me.look);
   const [currencyCode, setCurrencyCode] = useState(data.settings.currency);
   const [difficulty, setDifficulty] = useState<Difficulty>(data.settings.difficulty);
   const currency = currencyOf(currencyCode);
@@ -73,6 +79,11 @@ export function Onboarding({
     savings: Number(now.savings) || 0,
   };
 
+  function meet() {
+    saveMe({ name: name.trim(), look });
+    setStep("look");
+  }
+
   function finish() {
     markSeen();
     onDone();
@@ -91,7 +102,8 @@ export function Onboarding({
   }
 
   const back: Partial<Record<Step, Step>> = {
-    income: startAt === "welcome" ? "welcome" : undefined,
+    look: "hello",
+    income: startAt === "hello" ? "welcome" : undefined,
     plan: "income",
     now: "plan",
     compare: "now",
@@ -99,7 +111,7 @@ export function Onboarding({
 
   const screen = (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      {step !== "welcome" && (
+      {step !== "welcome" && step !== "hello" && (
         <header className="flex items-center justify-between px-3 pb-1 pt-4">
           <button
             onClick={() => {
@@ -111,7 +123,7 @@ export function Onboarding({
           >
             <ChevronLeft size={22} />
           </button>
-          <div className="flex gap-1.5" aria-hidden>
+          <div className={cn("flex gap-1.5", !STEPS.includes(step) && "invisible")} aria-hidden>
             {STEPS.map((s) => (
               <span
                 key={s}
@@ -132,8 +144,58 @@ export function Onboarding({
       )}
 
       <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto px-6 pb-8">
+        {step === "hello" && (
+          <div key="hello" className="rise flex flex-1 flex-col pt-14">
+            <h1 className="text-[32px] font-medium leading-[1.15]">Welcome to monifes</h1>
+            <p className="mt-2 text-[17px] text-muted">What should we call you?</p>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value.slice(0, 24))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && name.trim()) meet();
+              }}
+              placeholder="Your name"
+              autoComplete="given-name"
+              aria-label="Your name"
+              className="well mt-8 h-14 rounded-2xl px-5 text-xl placeholder:text-muted-2 focus:outline-none"
+            />
+            <p className="mt-3 text-sm text-muted">A first name or nickname. Only you see it.</p>
+            <div className="mt-auto pt-6">
+              <PrimaryButton disabled={!name.trim()} onClick={meet}>
+                Continue
+              </PrimaryButton>
+              <button onClick={finish} className="mt-3 w-full text-center text-sm text-muted">
+                Skip for now
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === "look" && (
+          <div key="look" className="rise flex flex-1 flex-col pt-2">
+            <h1 className="text-[28px] font-medium leading-tight">
+              What do you look like, {name.trim()}?
+            </h1>
+            <p className="mt-2 text-sm text-muted">Make a little you. You can change it any time.</p>
+            <div className="mt-5">
+              <CharacterBuilder look={look} onChange={setLook} name={name.trim()} />
+            </div>
+            <div className="mt-auto pt-2">
+              <PrimaryButton
+                onClick={() => {
+                  saveMe({ name: name.trim(), look });
+                  setStep("welcome");
+                }}
+              >
+                That’s me
+              </PrimaryButton>
+            </div>
+          </div>
+        )}
+
         {step === "welcome" && (
-          <Welcome onBegin={() => setStep("income")} onSkip={finish} />
+          <Welcome name={name.trim()} onBegin={() => setStep("income")} onSkip={finish} />
         )}
 
         {step === "income" && (
@@ -252,10 +314,18 @@ export function Onboarding({
   return host ? createPortal(screen, host) : screen;
 }
 
-function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void }) {
+function Welcome({
+  name,
+  onBegin,
+  onSkip,
+}: {
+  name: string;
+  onBegin: () => void;
+  onSkip: () => void;
+}) {
   return (
     <div className="rise flex flex-1 flex-col pt-10">
-      <p className="text-sm text-muted">monifes</p>
+      <p className="text-sm text-muted">{name ? `Hi, ${name}` : "monifes"}</p>
       <h1 className="mt-3 text-[32px] font-medium leading-[1.15]">
         See who you could become.
       </h1>
