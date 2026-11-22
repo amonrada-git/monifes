@@ -161,21 +161,23 @@ quiet). Phone frame: iPhone 13 / 390px.
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
   then "Which one feels like you?" — two answers (woman/man · light/medium/deep skin) pick your
-  character from a cast of six clay people; the portrait swaps instantly on the card, and the
-  welcome album then shows *that* character in all six moments. Art: `public/cast/<id>/`
-  (portrait + six moments each, 720px WebP; portraits share one pose and are lined up to the same
-  height, feet line and background tone), made once with Figma AI in "monifes — clay art" —
-  no running cost. Saved locally under `monifes:me:v1` for now (not yet synced).
-  Tried and dropped along the way: a 3D clay figure in three.js (not cute enough), an ink
-  line-art builder (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a
-  person; still in git history, commit 0c93eb9, if ever wanted back).
-- ✅ Welcome: "See who you could become." — an album of 3D clay photos of one original
-  character, wealth as more than money: more time with family · free to travel · building
-  your own thing · living in abundance · at peace with money · watching your wealth grow.
-  A swipeable scroll-snap stack (neighbours tucked behind, tilted), caption + page dots;
-  turns its own pages until touched. Art generated
-  with Figma AI in the Signary team file "monifes — clay art" (ydtxVcnpFQreMj7ip1y4Pi),
-  shipped as 720px WebP in `public/cast/` (one set per character). Becoming's no-plan card shows the
+  clay character from a cast of six; the portrait swaps instantly on the card. Portraits in
+  `public/cast/<id>/portrait.webp`, all one pose, lined up to the same height, feet line and
+  background tone. Made once with Figma AI in "monifes — clay art" — no running cost. Saved
+  locally under `monifes:me:v1` for now (not yet synced).
+  Next (decided 2026-11-22): more base characters (hair options) + clay dress-up accessories
+  layered on the portrait (glasses, hats… — tested, looks natural), and three mascots as your
+  little friends: the sprout, a Siamese lucky cat, a Shiba Inu guide dog. "You're the hero,
+  the mascot is your little friend."
+  Tried and dropped: a 3D clay figure in three.js (not cute enough), an ink line-art builder
+  (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a person; in git
+  history, commit 0c93eb9).
+- ✅ Welcome: "See who you could become." — an album of six clay moments with no one in them
+  (places, not people — the life is yours to picture): more time with family · free to travel ·
+  building your own thing · living in abundance · at peace with money · watching your wealth
+  grow. A swipeable scroll-snap stack (neighbours tucked behind, tilted), caption + page dots;
+  turns its own pages until touched. Art from Figma AI ("monifes — clay art",
+  ydtxVcnpFQreMj7ip1y4Pi, Signary team), 720px WebP in `public/scenes/`. Becoming's no-plan card shows the
   today → becoming ring demo (3% → 20% of pay kept).
 - ✅ Onboarding "magic moment" (first run, or Becoming → Make my plan): take-home pay → a
   suggested four-bucket plan drawn as one ring (the Home ring's band, cut into the buckets;

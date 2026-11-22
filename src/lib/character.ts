@@ -1,7 +1,7 @@
 // ─── You, in clay ─────────────────────────────────────────────────────────────
 // Two quick answers pick your character from a cast of six, drawn once in the
-// app's clay style (Figma AI, "monifes — clay art"). Each has a portrait and
-// the six welcome moments, in `public/cast/<id>/`.
+// app's clay style (Figma AI, "monifes — clay art"): one portrait each, all in
+// the same pose and scale, in `public/cast/<id>/`.
 
 export const PEOPLE = [
   { key: "woman", label: "Woman" },
@@ -21,7 +21,7 @@ export interface Look {
 
 export const DEFAULT_LOOK: Look = { person: "woman", skin: "light" };
 
-/** One of the six characters' pictures: their portrait or a welcome moment. */
+/** A picture of one of the six characters (for now, just their portrait). */
 export const castSrc = (look: Look, pic: string) => `/cast/${look.person}-${look.skin}/${pic}.webp`;
 
 /** Unknown values (an older or newer app version) fall back to the default. */

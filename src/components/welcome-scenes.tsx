@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { DEFAULT_LOOK, castSrc, type Look } from "@/lib/character";
 
 /**
  * Who you could become, as an album of clay photos: one character, the lives
@@ -14,38 +13,38 @@ import { DEFAULT_LOOK, castSrc, type Look } from "@/lib/character";
  * straightens and comes forward on top. It turns its own pages until someone touches it; with
  * reduced motion it stays put.
  *
- * The character is the one you picked (one of six; the same moments for each).
+ * The moments are places, not people — the life is yours to picture in them.
  */
 const SCENES = [
   {
     key: "family",
     caption: "More time with family",
-    alt: "A clay figure laughing on a picnic blanket with their mother and a small child",
+    alt: "A clay picnic laid out for a family: a basket, sliced fruit, a teapot and three cups",
   },
   {
     key: "travel",
     caption: "Free to travel",
-    alt: "A clay figure in a sun hat with a camera and a suitcase, mountains and a lighthouse behind",
+    alt: "A clay suitcase with a sun hat and a camera, mountains, a lighthouse and a palm tree behind",
   },
   {
     key: "build",
     caption: "Building your own thing",
-    alt: "A clay figure in an apron setting up their own little market stall of handmade cups",
+    alt: "A little clay market stall of handmade cups and plants, an apron on a hook beside it",
   },
   {
     key: "abundant",
     caption: "Living in abundance",
-    alt: "A clay figure carrying a basket overflowing with fruit, bread and flowers",
+    alt: "A clay basket overflowing with fruit, bread and flowers",
   },
   {
     key: "peaceful",
     caption: "At peace with money",
-    alt: "A clay figure sitting calmly on a cushion with eyes closed, holding a mug of tea",
+    alt: "A cosy clay corner: a floor cushion and blanket, a mug of tea, a plant and books",
   },
   {
     key: "wealthier",
     caption: "Watching your wealth grow",
-    alt: "A clay figure watering a little tree whose leaves are gold coins, beside a jar of coins",
+    alt: "A little clay tree with gold-coin leaves, a watering can and a jar of coins",
   },
 ] as const;
 
@@ -57,13 +56,7 @@ const OVERLAP = 44;
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function WelcomeScenes({
-  look = DEFAULT_LOOK,
-  className,
-}: {
-  look?: Look;
-  className?: string;
-}) {
+export function WelcomeScenes({ className }: { className?: string }) {
   const track = useRef<HTMLDivElement>(null);
   const cards = useRef<(HTMLDivElement | null)[]>([]);
   const [active, setActive] = useState(0);
@@ -150,7 +143,7 @@ export function WelcomeScenes({
             style={{ width: CARD, marginLeft: i === 0 ? 0 : -OVERLAP }}
           >
             <Image
-              src={castSrc(look, s.key)}
+              src={`/scenes/${s.key}.webp`}
               alt={s.alt}
               width={720}
               height={720}
