@@ -5,9 +5,9 @@ import { useStore } from "@/lib/store";
 import { BUCKETS, difficultyOf } from "@/lib/types";
 import { formatMoney } from "@/lib/currencies";
 import { bucketTotals, spendsInMonth } from "@/lib/compute";
-import { planDots, totalOf, wealthOf } from "@/lib/plan";
+import { planParts, totalOf, wealthOf } from "@/lib/plan";
 import { Card, SectionLabel } from "@/components/ui";
-import { DotSwatch, PlanDots } from "@/components/plan-dots";
+import { PlanRing, RingKey, Swatch, WealthShare } from "@/components/plan-ring";
 import { Onboarding } from "@/components/onboarding";
 
 export default function GoalsPage() {
@@ -41,7 +41,7 @@ export default function GoalsPage() {
 
       {!plan ? (
         <Card className="mt-5">
-          <PlanDots dots={Array(100).fill("open")} className="px-1" />
+          <PlanRing parts={[]} size="sm" label="An empty ring, waiting for your plan" className="mt-2" />
           <p className="mt-6 text-[17px] font-medium">Make a plan from one number</p>
           <p className="mt-1 text-sm leading-relaxed text-muted">
             Tell monifes what you take home each month and it suggests how much to spend, invest
@@ -56,7 +56,7 @@ export default function GoalsPage() {
         </Card>
       ) : (
         <>
-          {/* The plan — income as 100 dots */}
+          {/* The plan — income as one ring */}
           <Card className="mt-5">
             <div className="flex items-baseline justify-between">
               <SectionLabel>Monthly plan</SectionLabel>
@@ -67,11 +67,18 @@ export default function GoalsPage() {
             <p className="mt-2 text-xl font-medium">
               Build <span className="tnum">{formatMoney(wealthOf(plan), currency)}</span> a month
             </p>
-            <PlanDots dots={planDots(plan, income)} className="mt-5 px-1" />
+            <PlanRing
+              parts={planParts(plan, income)}
+              label={`Your take-home pay of ${formatMoney(income, currency)} split into four buckets`}
+              className="mt-5"
+            >
+              <span className="tnum text-xl font-medium">{formatMoney(income, currency)}</span>
+              <span className="mt-0.5 text-xs text-muted">take-home</span>
+            </PlanRing>
             <ul className="mt-5 flex flex-col gap-2.5">
               {BUCKETS.map((b) => (
                 <li key={b.key} className="flex items-center gap-3">
-                  <DotSwatch kind={b.key} />
+                  <Swatch kind={b.key} />
                   <span className="flex-1 text-[15px] font-medium">{b.label}</span>
                   <span className="tnum text-[15px] font-medium">
                     {formatMoney(plan[b.key], currency)}
@@ -118,9 +125,20 @@ export default function GoalsPage() {
             <Card className="mt-4">
               <SectionLabel>Where you started → the plan</SectionLabel>
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <PlanDots dots={planDots(baseline, income)} size="sm" />
-                <PlanDots dots={planDots(plan, income)} size="sm" />
+                <figure>
+                  <figcaption className="mb-3 text-center text-[13px] text-muted">Started</figcaption>
+                  <PlanRing parts={planParts(baseline, income)} size="sm" label="Where your money went when you started">
+                    <WealthShare budget={baseline} income={income} />
+                  </PlanRing>
+                </figure>
+                <figure>
+                  <figcaption className="mb-3 text-center text-[13px] text-muted">Plan</figcaption>
+                  <PlanRing parts={planParts(plan, income)} size="sm" label="Where your money goes on the plan">
+                    <WealthShare budget={plan} income={income} />
+                  </PlanRing>
+                </figure>
               </div>
+              <RingKey className="mt-5" />
               <div className="mt-4 flex items-baseline justify-between text-sm">
                 <span className="text-muted">Building each month</span>
                 <span className="tnum font-medium">

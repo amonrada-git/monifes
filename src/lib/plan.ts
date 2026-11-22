@@ -40,35 +40,20 @@ export const wealthOf = (b: Budget) => b.investments + b.savings;
 export const spendingOf = (b: Budget) => b.necessities + b["guilt-free"];
 export const totalOf = (b: Budget) => spendingOf(b) + wealthOf(b);
 
-// ─── Dots: income as 100 dots, 1% each ────────────────────────────────────────
+// ─── The ring: income as one circle ───────────────────────────────────────────
 
-/** "open" = income not accounted for by any bucket. */
-export type DotKind = Bucket | "open";
+export type PlanKind = Bucket;
+export type PlanPart = { kind: PlanKind; share: number };
 
 /**
- * 100 dots in bucket order. Largest-remainder rounding keeps the count at
- * exactly 100. When the buckets add up to more than income (spending more
- * than you earn) the dots show the buckets' shares of that larger total.
+ * Each bucket's share of the ring, in bucket order. Whatever they leave of
+ * income stays as the bare track. When the buckets add up to more than income
+ * (spending more than you earn) the ring shows their shares of that larger
+ * total, so it never laps itself.
  */
-export function planDots(b: Budget, income: number): DotKind[] {
+export function planParts(b: Budget, income: number): PlanPart[] {
   const total = Math.max(income, totalOf(b), 1);
-  const parts: { kind: DotKind; value: number }[] = [
-    ...BUCKETS.map((x) => ({ kind: x.key as DotKind, value: b[x.key] })),
-    { kind: "open", value: Math.max(0, total - totalOf(b)) },
-  ];
-  const exact = parts.map((p) => (p.value / total) * 100);
-  const counts = exact.map(Math.floor);
-  let left = 100 - counts.reduce((s, n) => s + n, 0);
-  exact
-    .map((e, i) => ({ i, frac: e - Math.floor(e) }))
-    .sort((a, b) => b.frac - a.frac)
-    .forEach(({ i }) => {
-      if (left > 0) {
-        counts[i]++;
-        left--;
-      }
-    });
-  return parts.flatMap((p, i) => Array<DotKind>(counts[i]).fill(p.kind));
+  return BUCKETS.map((x) => ({ kind: x.key, share: Math.max(0, b[x.key]) / total }));
 }
 
 /** Need share of spending (0..1), or null when nothing is spent. */

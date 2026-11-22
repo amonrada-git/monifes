@@ -5,10 +5,10 @@ import { ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { BUCKETS, Budget, Bucket, DIFFICULTIES, Difficulty } from "@/lib/types";
 import { CURRENCIES, currencyOf, formatMoney } from "@/lib/currencies";
-import { needShare, planDots, spendingOf, suggestPlan, totalOf, wealthOf } from "@/lib/plan";
+import { needShare, planParts, spendingOf, suggestPlan, totalOf, wealthOf } from "@/lib/plan";
 import { cn } from "@/lib/utils";
 import { AmountDisplay, Keypad, useAmountInput } from "./keypad";
-import { DotSwatch, PlanDots, useCountUp } from "./plan-dots";
+import { PlanRing, RingKey, Swatch, WealthShare, useCountUp } from "./plan-ring";
 
 type Step = "welcome" | "income" | "plan" | "now" | "compare";
 const STEPS: Step[] = ["income", "plan", "now", "compare"];
@@ -196,7 +196,7 @@ export function Onboarding({
                   key={b.key}
                   className="flex items-center gap-3 rounded-[var(--radius-card)] bg-card px-4 py-3"
                 >
-                  <DotSwatch kind={b.key} />
+                  <Swatch kind={b.key} />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="text-[15px] font-medium">{b.label}</span>
                     <span className="text-xs text-muted">
@@ -247,8 +247,6 @@ export function Onboarding({
 }
 
 function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void }) {
-  // A quiet field of 100 dots — the plan-to-be, before it has a shape.
-  const field = useMemo(() => Array<"open">(100).fill("open"), []);
   return (
     <div className="rise flex flex-1 flex-col pt-14">
       <p className="text-sm text-muted">monifes</p>
@@ -258,7 +256,8 @@ function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void 
       <p className="mt-3 text-[15px] leading-relaxed text-muted">
         One number to start: what you take home each month. Only you can see it.
       </p>
-      <PlanDots dots={field} className="mt-10 px-2" />
+      {/* The bare ring — the plan-to-be, before it has a shape. */}
+      <PlanRing parts={[]} label="An empty ring, waiting for your plan" className="mt-12" />
       <div className="mt-auto pt-10">
         <PrimaryButton onClick={onBegin}>Begin</PrimaryButton>
         <button onClick={onSkip} className="mt-3 w-full text-center text-sm text-muted">
@@ -284,7 +283,6 @@ function PlanReveal({
   onDifficulty: (d: Difficulty) => void;
   onAccept: () => void;
 }) {
-  const dots = planDots(plan, income);
   const wealth = useCountUp(wealthOf(plan));
 
   return (
@@ -294,7 +292,14 @@ function PlanReveal({
         Build <span className="tnum">{formatMoney(wealth, currency)}</span> every month.
       </h1>
 
-      <PlanDots dots={dots} className="mt-7 px-2" />
+      <PlanRing
+        parts={planParts(plan, income)}
+        label={`Your take-home pay of ${formatMoney(income, currency)} split into four buckets`}
+        className="mt-7"
+      >
+        <span className="tnum text-xl font-medium">{formatMoney(income, currency)}</span>
+        <span className="mt-0.5 text-xs text-muted">take-home</span>
+      </PlanRing>
 
       <ul className="mt-7 flex flex-col gap-3">
         {BUCKETS.map((b) => (
@@ -355,7 +360,7 @@ function PlanRow({
   const shown = useCountUp(amount);
   return (
     <li className="flex items-center gap-3">
-      <DotSwatch kind={bucket} />
+      <Swatch kind={bucket} />
       <span className="flex-1 text-[15px] font-medium">{label}</span>
       <span className="tnum w-10 text-right text-sm text-muted">{Math.round(share * 100)}%</span>
       <span className="tnum w-28 text-right text-[15px] font-medium">
@@ -394,14 +399,19 @@ function Compare({
 
       <div className="mt-7 grid grid-cols-2 gap-4">
         <figure>
-          <figcaption className="mb-2.5 text-[13px] font-medium text-muted">Now</figcaption>
-          <PlanDots dots={planDots(baseline, income)} size="sm" />
+          <figcaption className="mb-3 text-center text-[13px] font-medium text-muted">Now</figcaption>
+          <PlanRing parts={planParts(baseline, income)} size="sm" label="Where your money goes now">
+            <WealthShare budget={baseline} income={income} />
+          </PlanRing>
         </figure>
         <figure>
-          <figcaption className="mb-2.5 text-[13px] font-medium text-muted">Plan</figcaption>
-          <PlanDots dots={planDots(plan, income)} size="sm" />
+          <figcaption className="mb-3 text-center text-[13px] font-medium text-muted">Plan</figcaption>
+          <PlanRing parts={planParts(plan, income)} size="sm" label="Where your money goes on the plan">
+            <WealthShare budget={plan} income={income} />
+          </PlanRing>
         </figure>
       </div>
+      <RingKey className="mt-5" />
 
       <div className="mt-8 flex flex-col gap-4">
         <Line label="You build each month">
@@ -433,7 +443,7 @@ function Compare({
       )}
       {gap > 0 && (
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          About {formatMoney(gap, currency)} a month isn’t accounted for yet (the faint dots).
+          About {formatMoney(gap, currency)} a month isn’t accounted for yet (the bare part of the ring).
           Logging what you spend will show where it goes.
         </p>
       )}
