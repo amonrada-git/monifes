@@ -160,10 +160,11 @@ quiet). Phone frame: iPhone 13 / 390px.
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
-  then "Which one feels like you?" — make your clay you in three tabs: **Hair** (bob, ponytail,
-  big curls, bun, short, side part, buzz cut, short curls), **Skin** (light, medium, deep) and
-  **Glasses** (none, round). No gender question: people pick the hair they like. Every option is a
-  tile of your own face with it.
+  then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
+  light/medium/deep skin), **Hair** (woman: bob, ponytail, big curls, bun · man: short, side
+  part, buzz cut, short curls) and **Glasses** (none, round). Woman/man only decides which hair
+  styles are offered — everyone shares one face and body (decided 2026-11-23, after briefly
+  trying no gender question). Hair and glasses are tiles of your own face with each option.
   The art: 24 portraits in `public/people/v4/` (bump the folder when they change — cached old ones
   otherwise linger), all one body, one face (the bob drawing's), one pose and outfit (cream knit,
   sage trousers): each hair style's head is turned to the body's tilt and set on the shared body

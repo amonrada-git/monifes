@@ -1,12 +1,17 @@
 // ─── You, in clay ─────────────────────────────────────────────────────────────
-// A few taps pick your character: hair and skin (24 portraits in
-// `public/people/`, all one body, one face, one pose — only the hair and skin
-// change), then glasses layered on top (`public/dress/`). No gender question:
-// people pick the hair they like. Everything was drawn once in the app's clay
-// style (Figma AI, "monifes — clay art"), so there's no cost per person.
+// A few taps pick your character: woman or man (which decides the four hair
+// styles on offer), skin and hair (24 portraits in `public/people/`, all one
+// body, one face, one pose — only the hair and skin change), then glasses
+// layered on top (`public/dress/`). Everything was drawn once in the app's
+// clay style (Figma AI, "monifes — clay art"), so there's no cost per person.
 
 import { useMemo, useSyncExternalStore } from "react";
 import { EYES } from "./cast-eyes";
+
+export const PEOPLE = [
+  { key: "woman", label: "Woman" },
+  { key: "man", label: "Man" },
+] as const;
 
 export const SKINS = [
   { key: "light", label: "Light", hex: "#eccaa6" },
@@ -14,16 +19,20 @@ export const SKINS = [
   { key: "deep", label: "Deep", hex: "#5f3c26" },
 ] as const;
 
-export const HAIRS = [
-  { key: "bob", label: "Bob" },
-  { key: "ponytail", label: "Ponytail" },
-  { key: "big-curls", label: "Big curls" },
-  { key: "bun", label: "Bun" },
-  { key: "short", label: "Short" },
-  { key: "side", label: "Side part" },
-  { key: "buzz", label: "Buzz cut" },
-  { key: "short-curls", label: "Short curls" },
-] as const;
+export const HAIRS = {
+  woman: [
+    { key: "bob", label: "Bob" },
+    { key: "ponytail", label: "Ponytail" },
+    { key: "big-curls", label: "Big curls" },
+    { key: "bun", label: "Bun" },
+  ],
+  man: [
+    { key: "short", label: "Short" },
+    { key: "side", label: "Side part" },
+    { key: "buzz", label: "Buzz cut" },
+    { key: "short-curls", label: "Short curls" },
+  ],
+} as const;
 
 /** Square frames and sunglasses are drawn and placed too, but parked for now. */
 export const GLASSES = [
@@ -39,9 +48,11 @@ export const HATS = [
   { key: "cap", label: "Cap" },
 ] as const;
 
-export type Hair = (typeof HAIRS)[number]["key"];
+type Person = (typeof PEOPLE)[number]["key"];
+export type Hair = (typeof HAIRS)[Person][number]["key"];
 
 export interface Look {
+  person: Person;
   skin: (typeof SKINS)[number]["key"];
   hair: Hair;
   glasses: (typeof GLASSES)[number]["key"];
@@ -49,17 +60,20 @@ export interface Look {
 }
 
 export const DEFAULT_LOOK: Look = {
+  person: "woman",
   skin: "light",
   hair: "bob",
   glasses: "none",
   hat: "none",
 };
 
-// Looks saved before the hair list was one list (woman/man + style) still map.
-const OLD_HAIR: Record<string, Hair> = {
-  "woman-curly": "big-curls",
-  "man-curly": "short-curls",
-};
+/** Hair only comes in the styles offered to each; switching keeps it if it can. */
+export function hairFor(person: Person, hair: string): Hair {
+  return HAIRS[person].find((h) => h.key === hair)?.key ?? HAIRS[person][0].key;
+}
+
+// Older saved looks called both curly styles "curly".
+const OLD_HAIR: Record<string, Hair> = { "woman-curly": "big-curls", "man-curly": "short-curls" };
 
 const castId = (look: Pick<Look, "skin" | "hair">) => `${look.skin}-${look.hair}`;
 
@@ -119,11 +133,15 @@ export function dressOf(look: Look): Placed[] {
 /** Unknown values (an older or newer app version) fall back to the default. */
 function parseLook(v: unknown): Look {
   const r = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
-  const hair =
-    HAIRS.find((x) => x.key === r.hair)?.key ?? OLD_HAIR[`${r.person}-${r.hair}`] ?? DEFAULT_LOOK.hair;
+  const saved = String(r.hair);
+  // a look saved without a person: whoever's list has that hair
+  const person =
+    PEOPLE.find((p) => p.key === r.person)?.key ??
+    (HAIRS.man.some((h) => h.key === saved) ? "man" : DEFAULT_LOOK.person);
   return {
+    person,
     skin: SKINS.find((s) => s.key === r.skin)?.key ?? DEFAULT_LOOK.skin,
-    hair,
+    hair: hairFor(person, OLD_HAIR[`${person}-${saved}`] ?? saved),
     glasses: GLASSES.find((g) => g.key === r.glasses)?.key ?? "none",
     hat: "none", // hats are parked
   };
