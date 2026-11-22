@@ -1,184 +1,80 @@
 "use client";
 
-import { useState } from "react";
-import { Shuffle } from "lucide-react";
-import {
-  AGES,
-  GLASSES,
-  HAIR_COLORS,
-  HAIRS,
-  ITEMS,
-  OUTFIT_COLORS,
-  OUTFITS,
-  PEOPLE,
-  SKINS,
-  randomLook,
-  summary,
-  type Look,
-} from "@/lib/character";
+import Image from "next/image";
+import { PEOPLE, SKINS, castSrc, type Look } from "@/lib/character";
 import { cn } from "@/lib/utils";
 
-const TABS = ["You", "Hair", "Outfit", "Extras"] as const;
-type Tab = (typeof TABS)[number];
-
-type Opt = { key: string; label: string; hex?: string };
-
 /**
- * Describe yourself in a few taps. The card on top reads your choices back;
- * your clay you is made from them when you're done.
+ * Pick the clay you: two answers, and your character steps onto the card.
+ * All six portraits load up front so switching is instant.
  */
 export function CharacterBuilder({
   look,
   onChange,
+  name,
 }: {
   look: Look;
   onChange: (l: Look) => void;
+  name: string;
 }) {
-  const [tab, setTab] = useState<Tab>("You");
-  const set = (patch: Partial<Look>) => onChange({ ...look, ...patch });
-
   return (
     <div className="flex flex-col">
-      {/* A fixed height, so the controls below never shift as the summary grows */}
-      <div className="raised relative h-[156px] shrink-0 rounded-[28px] px-6 py-5">
-        <p className="text-[13px] text-muted">Your clay you will be</p>
-        <p
-          key={summary(look)}
-          className="rise mt-1.5 line-clamp-4 pr-10 text-[17px] font-medium leading-[1.35]"
-        >
-          {summary(look)}
-        </p>
-        <button
-          onClick={() => onChange(randomLook())}
-          aria-label="Surprise me"
-          className="raised absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full text-muted transition active:scale-95"
-        >
-          <Shuffle size={17} />
-        </button>
-      </div>
-
-      <div className="tray mt-4 flex gap-1 rounded-2xl p-1" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={cn(
-              "h-9 flex-1 rounded-xl text-[13px] transition",
-              tab === t ? "key-on" : "text-muted",
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-5 flex flex-col gap-5" role="tabpanel">
-        {tab === "You" && (
-          <>
-            <Keys label="I'm a" options={PEOPLE} value={look.person} onPick={(person) => set({ person })} />
-            <Keys label="Age" options={AGES} value={look.age} onPick={(age) => set({ age })} />
-            <Swatches label="Skin" options={SKINS} value={look.skin} onPick={(skin) => set({ skin })} />
-          </>
-        )}
-        {tab === "Hair" && (
-          <>
-            <Keys label="Style" options={HAIRS} value={look.hair} onPick={(hair) => set({ hair })} />
-            {look.hair !== "bald" && (
-              <Swatches
-                label="Colour"
-                options={HAIR_COLORS}
-                value={look.hairColor}
-                onPick={(hairColor) => set({ hairColor })}
+      <div className="raised relative mx-auto aspect-square w-full max-w-[min(100%,36dvh)] overflow-hidden rounded-[28px]">
+        {PEOPLE.flatMap((p) =>
+          SKINS.map((s) => {
+            const on = p.key === look.person && s.key === look.skin;
+            return (
+              <Image
+                key={`${p.key}-${s.key}`}
+                src={castSrc({ person: p.key, skin: s.key }, "portrait")}
+                alt={on ? `${name || "Your"} clay character` : ""}
+                aria-hidden={!on}
+                width={720}
+                height={720}
+                priority
+                className={cn(
+                  "absolute inset-0 h-full w-full object-cover transition duration-300",
+                  on ? "scale-100 opacity-100" : "scale-[0.97] opacity-0",
+                )}
               />
-            )}
-          </>
-        )}
-        {tab === "Outfit" && (
-          <>
-            <Keys label="Wearing" options={OUTFITS} value={look.outfit} onPick={(outfit) => set({ outfit })} />
-            <Swatches
-              label="Colour"
-              options={OUTFIT_COLORS}
-              value={look.outfitColor}
-              onPick={(outfitColor) => set({ outfitColor })}
-            />
-          </>
-        )}
-        {tab === "Extras" && (
-          <>
-            <Keys label="Glasses" options={GLASSES} value={look.glasses} onPick={(glasses) => set({ glasses })} />
-            <Keys label="Holding" options={ITEMS} value={look.item} onPick={(item) => set({ item })} />
-          </>
+            );
+          }),
         )}
       </div>
-    </div>
-  );
-}
 
-function Keys<K extends string>({
-  label,
-  options,
-  value,
-  onPick,
-}: {
-  label: string;
-  options: readonly (Opt & { key: K })[];
-  value: K;
-  onPick: (k: K) => void;
-}) {
-  return (
-    <div>
-      <p className="mb-2 text-[13px] text-muted">{label}</p>
-      <div role="radiogroup" aria-label={label} className="tray flex flex-wrap gap-1 rounded-2xl p-1">
-        {options.map((o) => (
+      <p className="mb-2 mt-6 text-[13px] text-muted">I’m a</p>
+      <div role="radiogroup" aria-label="I’m a" className="tray flex gap-1 rounded-2xl p-1">
+        {PEOPLE.map((p) => (
           <button
-            key={o.key}
+            key={p.key}
             role="radio"
-            aria-checked={value === o.key}
-            onClick={() => onPick(o.key)}
+            aria-checked={look.person === p.key}
+            onClick={() => onChange({ ...look, person: p.key })}
             className={cn(
-              "h-9 grow rounded-xl px-3.5 text-[13px] transition",
-              value === o.key ? "key-on" : "text-muted",
+              "h-10 flex-1 rounded-xl text-sm transition",
+              look.person === p.key ? "key-on" : "text-muted",
             )}
           >
-            {o.label}
+            {p.label}
           </button>
         ))}
       </div>
-    </div>
-  );
-}
 
-function Swatches<K extends string>({
-  label,
-  options,
-  value,
-  onPick,
-}: {
-  label: string;
-  options: readonly (Opt & { key: K })[];
-  value: K;
-  onPick: (k: K) => void;
-}) {
-  return (
-    <div>
-      <p className="mb-2 text-[13px] text-muted">{label}</p>
-      <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-3">
-        {options.map((o) => (
+      <p className="mb-2 mt-5 text-[13px] text-muted">Skin</p>
+      <div role="radiogroup" aria-label="Skin" className="flex gap-3">
+        {SKINS.map((s) => (
           <button
-            key={o.key}
+            key={s.key}
             role="radio"
-            aria-checked={value === o.key}
-            aria-label={o.label}
-            title={o.label}
-            onClick={() => onPick(o.key)}
+            aria-checked={look.skin === s.key}
+            aria-label={s.label}
+            title={s.label}
+            onClick={() => onChange({ ...look, skin: s.key })}
             className={cn(
-              "h-10 w-10 rounded-full shadow-[inset_0_-2px_3px_rgba(0,0,0,0.15),inset_0_2px_2px_rgba(255,255,255,0.35)] transition active:scale-95",
-              value === o.key && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+              "h-11 w-11 rounded-full shadow-[inset_0_-2px_3px_rgba(0,0,0,0.15),inset_0_2px_2px_rgba(255,255,255,0.35)] transition active:scale-95",
+              look.skin === s.key && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
             )}
-            style={{ background: o.hex }}
+            style={{ background: s.hex }}
           />
         ))}
       </div>

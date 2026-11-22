@@ -159,21 +159,22 @@ quiet). Phone frame: iPhone 13 / 390px.
   skipped; date/shop/amount columns guessed then confirmable; payments & refunds left out; each
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
-- 🧪 Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
-  then "What do you look like?" — build a little you in simple ink line art (an SVG bust in
-  layers, `src/components/avatar.tsx`): Hair (9 styles, dark or light) · Face (eyes, extras:
-  blush, freckles, mustache, beard) · Body (6 tops) · Glasses · Item (coffee, plant, a cat on
-  your shoulder, book, camera). Every tile shows you wearing that option; Surprise-me shuffle;
-  blinks now and then. Saved locally under `monifes:me:v1` for now (not yet synced). (A 3D clay
-  figure was tried first and dropped: not cute enough.) Next: the welcome album in the same
-  line style, with *you* in each moment.
+- ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
+  then "What do you look like?" — two answers (woman/man · light/medium/deep skin) pick your
+  character from a cast of six clay people; the portrait swaps instantly on the card, and the
+  welcome album then shows *that* character in all six moments. Art: `public/cast/<id>/`
+  (portrait + six moments each, 720px WebP), made once with Figma AI in "monifes — clay art" —
+  no running cost. Saved locally under `monifes:me:v1` for now (not yet synced).
+  Tried and dropped along the way: a 3D clay figure in three.js (not cute enough), an ink
+  line-art builder (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a
+  person; still in git history, commit 0c93eb9, if ever wanted back).
 - ✅ Welcome: "See who you could become." — an album of 3D clay photos of one original
   character, wealth as more than money: more time with family · free to travel · building
   your own thing · living in abundance · at peace with money · watching your wealth grow.
   A swipeable scroll-snap stack (neighbours tucked behind, tilted), caption + page dots;
   turns its own pages until touched. Art generated
   with Figma AI in the Signary team file "monifes — clay art" (ydtxVcnpFQreMj7ip1y4Pi),
-  shipped as 720px WebP in `public/welcome/`. Becoming's no-plan card shows the
+  shipped as 720px WebP in `public/cast/` (one set per character). Becoming's no-plan card shows the
   today → becoming ring demo (3% → 20% of pay kept).
 - ✅ Onboarding "magic moment" (first run, or Becoming → Make my plan): take-home pay → a
   suggested four-bucket plan drawn as one ring (the Home ring's band, cut into the buckets;

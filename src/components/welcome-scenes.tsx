@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useClayYou } from "@/lib/clay-you";
+import { DEFAULT_LOOK, castSrc, type Look } from "@/lib/character";
 
 /**
  * Who you could become, as an album of clay photos: one character, the lives
@@ -14,8 +14,7 @@ import { useClayYou } from "@/lib/clay-you";
  * straightens and comes forward on top. It turns its own pages until someone touches it; with
  * reduced motion it stays put.
  *
- * Once you've made your clay you, each moment is repainted with you in it;
- * until a picture arrives it shows the shared art, softly blurred, "painting".
+ * The character is the one you picked (one of six; the same moments for each).
  */
 const SCENES = [
   {
@@ -58,12 +57,17 @@ const OVERLAP = 44;
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function WelcomeScenes({ className }: { className?: string }) {
+export function WelcomeScenes({
+  look = DEFAULT_LOOK,
+  className,
+}: {
+  look?: Look;
+  className?: string;
+}) {
   const track = useRef<HTMLDivElement>(null);
   const cards = useRef<(HTMLDivElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(() => !reducedMotion());
-  const mine = useClayYou();
 
   // Tilt and scale each print by its distance from the centre. Written straight
   // to the DOM each frame so swiping stays smooth.
@@ -145,36 +149,15 @@ export function WelcomeScenes({ className }: { className?: string }) {
             className="raised relative aspect-square shrink-0 snap-center overflow-hidden rounded-[28px] will-change-transform"
             style={{ width: CARD, marginLeft: i === 0 ? 0 : -OVERLAP }}
           >
-            {mine.pics[s.key] ? (
-              <Image
-                src={mine.pics[s.key]!}
-                alt={`You: ${s.caption.toLowerCase()}`}
-                fill
-                unoptimized
-                draggable={false}
-                className="rise select-none object-cover"
-              />
-            ) : (
-              <Image
-                src={`/welcome/${s.key}.webp`}
-                alt={s.alt}
-                width={720}
-                height={720}
-                priority={i < 2}
-                draggable={false}
-                className={cn(
-                  "h-full w-full select-none object-cover transition",
-                  mine.painting.includes(s.key) && "scale-110 blur-xl opacity-60",
-                )}
-              />
-            )}
-            {!mine.pics[s.key] && mine.painting.includes(s.key) && (
-              <span className="absolute inset-0 flex items-center justify-center">
-                <span className="raised rounded-full px-3.5 py-1.5 text-[13px] text-muted">
-                  Painting you in…
-                </span>
-              </span>
-            )}
+            <Image
+              src={castSrc(look, s.key)}
+              alt={s.alt}
+              width={720}
+              height={720}
+              priority={i < 2}
+              draggable={false}
+              className="h-full w-full select-none object-cover"
+            />
           </div>
         ))}
         <div aria-hidden className="shrink-0" style={{ width: `calc((100% - ${CARD}) / 2)` }} />

@@ -126,32 +126,6 @@ body {
   animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* A lump of clay, breathing while your clay you is made */
-@keyframes knead {
-  0%,
-  100% {
-    transform: scale(1, 1) translateY(0);
-  }
-  30% {
-    transform: scale(1.1, 0.88) translateY(6px);
-  }
-  60% {
-    transform: scale(0.92, 1.08) translateY(-6px);
-  }
-}
-.clay-lump {
-  background: radial-gradient(circle at 35% 30%, #f4e6d4 0%, #e2c4a3 45%, #c99b77 100%);
-  box-shadow:
-    0 14px 24px -12px rgba(80, 50, 30, 0.35),
-    inset -6px -8px 14px rgba(120, 80, 50, 0.25);
-  animation: knead 1.8s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .clay-lump {
-    animation: none;
-  }
-}
-
 /* Hide scrollbars inside the phone frame for a cleaner look */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
