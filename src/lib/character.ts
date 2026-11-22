@@ -99,7 +99,7 @@ export const DEFAULT_LOOK: Look = {
   hair: "bob",
   hairTone: "dark",
   eyes: "dots",
-  extra: "blush",
+  extra: "none",
   top: "tee",
   glasses: "none",
   item: "none",
