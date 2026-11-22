@@ -79,6 +79,7 @@ export const ITEMS = [
   { key: "camera", label: "Camera", phrase: "a small black camera" },
   { key: "book", label: "Book", phrase: "a favourite book" },
   { key: "cat", label: "Cat", phrase: "a small fluffy cat" },
+  { key: "dog", label: "Dog", phrase: "a small fluffy puppy" },
 ] as const satisfies Option<string>[];
 
 type KeyOf<T extends readonly { key: string }[]> = T[number]["key"];
