@@ -10,8 +10,8 @@ export function Card({
   return (
     <div
       className={cn(
-        // flat panels — no border, no shadow; just a step lighter than the canvas
-        "rounded-[var(--radius-card)] bg-card p-5",
+        // raised warm-white panels, lit from above
+        "raised rounded-[var(--radius-card)] p-5",
         className,
       )}
     >

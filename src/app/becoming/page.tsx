@@ -49,7 +49,7 @@ export default function BecomingPage() {
           </p>
           <button
             onClick={() => setPlanning(true)}
-            className="mt-5 h-12 w-full rounded-2xl bg-accent text-[15px] font-medium text-white transition active:scale-[0.98]"
+            className="mt-5 h-12 w-full btn-ink rounded-2xl text-[15px] font-medium transition active:scale-[0.98]"
           >
             Make my plan
           </button>
@@ -156,7 +156,7 @@ export default function BecomingPage() {
 
           <button
             onClick={() => setPlanning(true)}
-            className="mt-5 h-11 w-full rounded-2xl border border-border text-[15px] transition active:scale-[0.98]"
+            className="raised mt-5 h-12 w-full rounded-2xl text-[15px] transition active:scale-[0.98]"
           >
             Redo my plan
           </button>

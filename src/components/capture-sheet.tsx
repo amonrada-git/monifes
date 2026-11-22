@@ -95,13 +95,15 @@ export function CaptureSheet({ onClose }: { onClose: () => void }) {
                   key={b.key}
                   onClick={() => chooseBucket(b.key)}
                   className={cn(
-                    "flex flex-col items-start gap-1 rounded-3xl border border-border bg-card p-4 text-left transition active:scale-[0.97]",
-                    bucket === b.key && "border-accent",
+                    "flex flex-col items-start gap-1 rounded-3xl p-4 text-left transition active:scale-[0.97]",
+                    bucket === b.key ? "key-on" : "raised",
                   )}
                 >
                   <span className="text-2xl">{b.emoji}</span>
                   <span className="text-[15px] font-medium leading-tight">{b.label}</span>
-                  <span className="text-xs text-muted">{b.blurb}</span>
+                  <span className={cn("text-xs", bucket === b.key ? "opacity-70" : "text-muted")}>
+                    {b.blurb}
+                  </span>
                 </button>
               ))}
             </div>
@@ -116,14 +118,16 @@ export function CaptureSheet({ onClose }: { onClose: () => void }) {
                   key={f.key}
                   onClick={() => chooseFeeling(f.key)}
                   className={cn(
-                    "flex items-center gap-4 rounded-3xl border border-border bg-card px-5 py-3.5 text-left transition active:scale-[0.98]",
-                    feeling === f.key && "border-accent",
+                    "flex items-center gap-4 rounded-3xl px-5 py-3.5 text-left transition active:scale-[0.98]",
+                    feeling === f.key ? "key-on" : "raised",
                   )}
                 >
                   <span className="text-3xl">{f.emoji}</span>
                   <span className="flex flex-col">
                     <span className="text-[15px] font-medium">{f.label}</span>
-                    <span className="text-xs text-muted">{f.hint}</span>
+                    <span className={cn("text-xs", feeling === f.key ? "opacity-70" : "text-muted")}>
+                      {f.hint}
+                    </span>
                   </span>
                 </button>
               ))}
@@ -195,7 +199,7 @@ function AmountStep({
         onChange={(e) => onLabel(e.target.value)}
         placeholder="What was it? (optional)"
         maxLength={40}
-        className="mx-auto mt-5 w-full rounded-2xl bg-card px-4 py-3 text-center text-sm font-normal placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft"
+        className="well mx-auto mt-5 w-full rounded-2xl px-4 py-3 text-center text-sm font-normal placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft"
       />
 
       <div className="mt-5">
@@ -205,7 +209,7 @@ function AmountStep({
       <button
         onClick={onNext}
         disabled={!canNext}
-        className="mt-5 h-14 rounded-2xl bg-accent text-lg font-medium text-white transition active:scale-[0.98] disabled:opacity-30"
+        className="mt-5 h-14 btn-ink rounded-2xl text-lg font-medium transition active:scale-[0.98] disabled:opacity-30"
       >
         Next
       </button>

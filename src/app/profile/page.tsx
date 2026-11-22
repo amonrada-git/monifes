@@ -48,7 +48,7 @@ export default function ProfilePage() {
                 setSigningOut(false);
               }}
               disabled={signingOut}
-              className="mt-4 h-11 w-full rounded-2xl border border-border text-[15px] font-normal transition active:scale-[0.98] disabled:opacity-40"
+              className="mt-4 raised h-12 w-full rounded-2xl text-[15px] font-normal transition active:scale-[0.98] disabled:opacity-40"
             >
               {signingOut ? "Signing out…" : "Sign out"}
             </button>
@@ -62,7 +62,7 @@ export default function ProfilePage() {
             </p>
             <button
               onClick={() => setSigningIn(true)}
-              className="mt-4 h-11 w-full rounded-2xl bg-accent text-[15px] font-medium text-white transition active:scale-[0.98]"
+              className="mt-4 h-11 w-full btn-ink rounded-2xl text-[15px] font-medium transition active:scale-[0.98]"
             >
               Continue with email
             </button>
@@ -87,8 +87,8 @@ export default function ProfilePage() {
                 key={p.key}
                 onClick={() => apply(p.key)}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-left transition active:scale-[0.98]",
-                  applied === p.key && "border-foreground",
+                  "raised flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition active:scale-[0.98]",
+                  applied === p.key && "ring-[1.5px] ring-foreground",
                 )}
               >
                 <span className="flex min-w-0 flex-1 flex-col">

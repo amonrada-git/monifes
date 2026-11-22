@@ -111,7 +111,7 @@ export default function HomePage() {
             </button>
             <button
               onClick={() => setCapture(true)}
-              className="flex items-center gap-1 text-sm font-medium transition active:scale-95"
+              className="btn-ink flex h-9 items-center gap-1 rounded-xl px-3.5 text-sm font-medium transition active:scale-95"
             >
               <Plus size={16} strokeWidth={2} />
               Add
@@ -120,7 +120,7 @@ export default function HomePage() {
         </div>
 
         {!checkedIn && (
-          <div className="mb-4 rounded-[var(--radius-card)] bg-accent-tint px-4 py-4">
+          <div className="well mb-4 rounded-2xl px-4 py-4">
             <p className="text-sm font-medium">Any spending today?</p>
             <p className="mt-1 text-xs leading-relaxed text-muted">
               Import your card statement and tag each purchase, or record a spend yourself.
@@ -128,13 +128,13 @@ export default function HomePage() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => setImporting(true)}
-                className="h-9 rounded-[6px] bg-accent px-4 text-xs font-medium text-white transition active:scale-95"
+                className="btn-ink h-9 rounded-xl px-4 text-xs font-medium transition active:scale-95"
               >
                 Import statement
               </button>
               <button
                 onClick={() => setCapture(true)}
-                className="h-9 rounded-[6px] border border-foreground px-4 text-xs font-medium transition active:scale-95"
+                className="raised h-9 rounded-xl px-4 text-xs font-medium transition active:scale-95"
               >
                 Record manually
               </button>

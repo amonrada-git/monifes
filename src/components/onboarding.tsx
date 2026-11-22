@@ -116,7 +116,7 @@ export function Onboarding({
                 key={s}
                 className={cn(
                   "h-1.5 w-1.5 rounded-full transition-colors",
-                  STEPS.indexOf(s) <= STEPS.indexOf(step) ? "bg-foreground" : "bg-border/60",
+                  STEPS.indexOf(s) <= STEPS.indexOf(step) ? "bg-foreground" : "bg-muted-2/60",
                 )}
               />
             ))}
@@ -142,7 +142,7 @@ export function Onboarding({
             </h1>
             <p className="mt-2 text-sm text-muted">Your take-home pay, after tax.</p>
 
-            <div className="mt-5 flex gap-1.5">
+            <div className="tray mt-5 inline-flex gap-1 self-start rounded-2xl p-1">
               {CURRENCIES.map((c) => (
                 <button
                   key={c.code}
@@ -151,8 +151,8 @@ export function Onboarding({
                     pay.setValue("");
                   }}
                   className={cn(
-                    "h-8 rounded-full px-3.5 text-xs transition",
-                    c.code === currencyCode ? "bg-foreground text-background" : "bg-card text-muted",
+                    "h-9 rounded-xl px-4 text-xs transition",
+                    c.code === currencyCode ? "key-on" : "text-muted",
                   )}
                 >
                   {c.symbol} {c.code}
@@ -195,7 +195,7 @@ export function Onboarding({
               {BUCKETS.map((b) => (
                 <label
                   key={b.key}
-                  className="flex items-center gap-3 rounded-[var(--radius-card)] bg-card px-4 py-3"
+                  className="raised flex items-center gap-3 rounded-2xl px-4 py-3"
                 >
                   <Swatch kind={b.key} />
                   <span className="flex min-w-0 flex-1 flex-col">
@@ -326,14 +326,14 @@ function PlanReveal({
 
       <div className="mt-7">
         <p className="text-[13px] font-medium text-muted">Need : Want target</p>
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
+        <div className="tray mt-2 grid grid-cols-3 gap-1 rounded-2xl p-1">
           {DIFFICULTIES.map((d) => (
             <button
               key={d.key}
               onClick={() => onDifficulty(d.key)}
               className={cn(
-                "flex flex-col items-center rounded-[var(--radius-card)] py-2.5 transition",
-                d.key === difficulty ? "bg-foreground text-background" : "bg-card",
+                "flex flex-col items-center rounded-xl py-2.5 transition",
+                d.key === difficulty ? "key-on" : "text-foreground",
               )}
             >
               <span className="tnum text-[15px] font-medium">{d.ratio}</span>
@@ -487,7 +487,7 @@ function PrimaryButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="mt-5 h-14 w-full rounded-2xl bg-accent text-lg font-medium text-white transition active:scale-[0.98] disabled:opacity-30"
+      className="mt-5 h-14 w-full btn-ink rounded-2xl text-lg font-medium transition active:scale-[0.98] disabled:opacity-30"
     >
       {children}
     </button>

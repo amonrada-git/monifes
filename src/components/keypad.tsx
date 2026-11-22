@@ -62,7 +62,7 @@ export function Keypad({
             key={i}
             onClick={() => onPress(k)}
             aria-label={k === "del" ? "Delete" : k}
-            className="flex h-14 items-center justify-center rounded-2xl bg-card text-2xl font-medium transition active:scale-95 active:bg-accent-tint"
+            className="raised flex h-14 items-center justify-center rounded-2xl text-2xl font-medium transition active:scale-95 active:shadow-none"
           >
             {k === "del" ? <Delete size={22} className="text-muted" /> : k}
           </button>

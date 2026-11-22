@@ -229,10 +229,8 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
                   key={b.key}
                   onClick={() => setBucket(b.key)}
                   className={cn(
-                    "flex items-center gap-2 rounded-[var(--radius-card)] border px-3 py-2.5 text-left text-sm font-medium transition active:scale-[0.97]",
-                    bucket === b.key
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-card",
+                    "flex items-center gap-2 rounded-2xl px-3 py-2.5 text-left text-sm font-medium transition active:scale-[0.97]",
+                    bucket === b.key ? "key-on" : "raised",
                   )}
                 >
                   <span>{b.emoji}</span>
@@ -248,7 +246,7 @@ export function ImportSheet({ onClose }: { onClose: () => void }) {
                   key={f.key}
                   disabled={!bucket}
                   onClick={() => tag(f.key)}
-                  className="flex flex-col items-center gap-1 rounded-[var(--radius-card)] bg-card px-1 py-3 transition active:scale-95 disabled:active:scale-100"
+                  className="raised flex flex-col items-center gap-1 rounded-2xl px-1 py-3 transition active:scale-95 disabled:active:scale-100"
                 >
                   <span className="text-2xl">{f.emoji}</span>
                   <span className="text-[11px] leading-tight">{f.label}</span>
@@ -339,7 +337,7 @@ function CheckStep({
       </p>
       {notes.length > 0 && <p className="mt-0.5 text-xs text-muted">{notes.join(" · ")}</p>}
 
-      <ul className="mt-4 flex flex-col gap-3 rounded-[var(--radius-card)] bg-card p-4">
+      <ul className="raised mt-4 flex flex-col gap-3 rounded-[var(--radius-card)] p-4">
         {charges.slice(0, 3).map((t) => (
           <li key={t.id} className="flex items-center gap-3">
             <span className="flex min-w-0 flex-1 flex-col">
@@ -376,7 +374,7 @@ function CheckStep({
           onChange={(amount) => onMapping({ ...mapping, amount })}
         />
         {ambiguous && (
-          <div className="flex items-center gap-3 rounded-[var(--radius-card)] bg-card px-4 py-2.5">
+          <div className="flex items-center gap-3 raised rounded-2xl px-4 py-2.5">
             <span className="w-16 text-sm text-muted">03/04 is</span>
             <div className="flex flex-1 gap-1.5">
               {[
@@ -387,8 +385,8 @@ function CheckStep({
                   key={o.label}
                   onClick={() => onMapping({ ...mapping, dayFirst: o.dayFirst })}
                   className={cn(
-                    "flex-1 rounded-[6px] py-1.5 text-sm transition",
-                    mapping.dayFirst === o.dayFirst ? "bg-foreground text-background" : "bg-background",
+                    "flex-1 rounded-xl py-1.5 text-sm transition",
+                    mapping.dayFirst === o.dayFirst ? "key-on" : "text-muted",
                   )}
                 >
                   {o.label}
@@ -402,7 +400,7 @@ function CheckStep({
       <button
         onClick={onStart}
         disabled={charges.length === 0}
-        className="mt-6 h-14 rounded-2xl bg-accent text-lg font-medium text-white transition active:scale-[0.98] disabled:opacity-30"
+        className="mt-6 h-14 btn-ink rounded-2xl text-lg font-medium transition active:scale-[0.98] disabled:opacity-30"
       >
         {freshCount > 0 ? `Start tagging (${freshCount})` : "Nothing new to tag"}
       </button>
@@ -430,7 +428,7 @@ function ColumnSelect({
   onChange: (col: number) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded-[var(--radius-card)] bg-card px-4 py-2.5">
+    <label className="flex items-center gap-3 raised rounded-2xl px-4 py-2.5">
       <span className="w-16 text-sm text-muted">{label}</span>
       <select
         value={value}

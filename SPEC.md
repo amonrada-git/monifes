@@ -117,11 +117,15 @@ Bottom navigation, four tabs:
 - 🌱 **Becoming** — the 4-bucket plan + difficulty selector; savings goals and progress.
 - 👤 **Profile** — settings: currency, target/difficulty, preferences.
 
-**Look & feel (updated Jul 2026):** design reference is **thedot.space** — warm greige paper
-canvas `#D1D0CC`, ink `#020201`, gray `#91908C`. Flat borderless cards one step lighter than
-the canvas, 1px outlined charts (hollow-band ring), no bold text (medium/regular only,
-hierarchy via size & gray), Inter font, 8px card radius, month-as-dot-grid on Insights
-(filled = spent, open ring = no-spend win, faint = quiet). Phone frame: iPhone 13 / 390px.
+**Look & feel (updated Nov 2026):** soft and tactile. Warm-white surfaces (`#F9F8F5`) sit
+raised on a warm light canvas (`#ECEBE6`), lit from above: a bright top edge and a soft warm
+shadow (`.raised`). A set of options sits in a white tray (`.tray`); the chosen option is a
+glossy ink key that stands off the tray (`.key-on`), the rest stay flat. The primary action
+is the same ink key (`.btn-ink`); inputs are inset wells (`.well`). The tab bar is a floating
+tray with the current tab as the ink key. Ink `#020201` is still the one accent; charts stay
+1px outlined (hollow-band rings), no bold text (medium/regular only), Inter, 22px card
+radius, month-as-dot-grid on Insights (filled = spent, open ring = no-spend win, faint =
+quiet). Phone frame: iPhone 13 / 390px.
 
 ---
 

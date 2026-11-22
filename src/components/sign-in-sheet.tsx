@@ -131,7 +131,7 @@ export function SignInSheet({ onClose }: { onClose: () => void }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="mt-6 h-14 w-full rounded-2xl bg-card px-4 text-[17px] font-normal placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft"
+              className="mt-6 well h-14 w-full rounded-2xl px-4 text-[17px] font-normal placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft"
             />
 
             {error && <p className="mt-3 text-sm text-muted">{error}</p>}
@@ -139,7 +139,7 @@ export function SignInSheet({ onClose }: { onClose: () => void }) {
             <button
               type="submit"
               disabled={!validEmail || busy}
-              className="mt-5 h-14 rounded-2xl bg-accent text-lg font-medium text-white transition active:scale-[0.98] disabled:opacity-30"
+              className="mt-5 h-14 btn-ink rounded-2xl text-lg font-medium transition active:scale-[0.98] disabled:opacity-30"
             >
               {busy ? "Sending…" : "Send code"}
             </button>
@@ -168,7 +168,7 @@ export function SignInSheet({ onClose }: { onClose: () => void }) {
               disabled={busy}
               aria-label={`${CODE_LENGTH}-digit code`}
               placeholder={"·".repeat(CODE_LENGTH)}
-              className="tnum mt-6 h-16 w-full rounded-2xl bg-card text-center text-3xl font-medium tracking-[0.3em] placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft disabled:opacity-60"
+              className="tnum mt-6 well h-16 w-full rounded-2xl text-center text-3xl font-medium tracking-[0.3em] placeholder:text-muted-2 focus:outline-none focus:ring-2 focus:ring-accent-soft disabled:opacity-60"
             />
 
             <p className="mt-3 min-h-5 text-sm text-muted">
