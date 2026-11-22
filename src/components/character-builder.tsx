@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GLASSES, HAIRS, HATS, PEOPLE, SKINS, hairFor, type Look } from "@/lib/character";
+import { GLASSES, HAIRS, PEOPLE, SKINS, hairFor, type Look } from "@/lib/character";
 import { cn } from "@/lib/utils";
 import { ClayYou } from "./clay-you";
 
@@ -26,7 +26,7 @@ export function CharacterBuilder({
 
   return (
     <div className="flex flex-col">
-      <div className="raised mx-auto w-full max-w-[min(100%,34dvh)] overflow-hidden rounded-[28px]">
+      <div className="raised mx-auto w-full max-w-[min(100%,28dvh)] overflow-hidden rounded-[28px]">
         <ClayYou look={look} label={`${name || "Your"} clay character`} priority />
       </div>
 
@@ -49,52 +49,54 @@ export function CharacterBuilder({
 
       <div className="mt-4 flex flex-col gap-4" role="tabpanel">
         {tab === "You" && (
-          <>
-            <Label>I’m a</Label>
-            <div role="radiogroup" aria-label="I’m a" className="tray -mt-2 flex gap-1 rounded-2xl p-1">
-              {PEOPLE.map((p) => (
-                <button
-                  key={p.key}
-                  role="radio"
-                  aria-checked={look.person === p.key}
-                  onClick={() => set({ person: p.key, hair: hairFor(p.key, look.hair) })}
-                  className={cn(
-                    "h-10 flex-1 rounded-xl text-sm transition",
-                    look.person === p.key ? "key-on" : "text-muted",
-                  )}
-                >
-                  {p.label}
-                </button>
-              ))}
+          // side by side, so the whole tab fits above the button
+          <div className="flex items-end gap-4">
+            <div className="min-w-0 flex-1">
+              <Label>I’m a</Label>
+              <div role="radiogroup" aria-label="I’m a" className="tray mt-2 flex gap-1 rounded-2xl p-1">
+                {PEOPLE.map((p) => (
+                  <button
+                    key={p.key}
+                    role="radio"
+                    aria-checked={look.person === p.key}
+                    onClick={() => set({ person: p.key, hair: hairFor(p.key, look.hair) })}
+                    className={cn(
+                      "h-10 flex-1 rounded-xl text-sm transition",
+                      look.person === p.key ? "key-on" : "text-muted",
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <Label>Skin</Label>
-            <div role="radiogroup" aria-label="Skin" className="-mt-2 flex gap-3">
-              {SKINS.map((s) => (
-                <button
-                  key={s.key}
-                  role="radio"
-                  aria-checked={look.skin === s.key}
-                  aria-label={s.label}
-                  title={s.label}
-                  onClick={() => set({ skin: s.key })}
-                  className={cn(
-                    "h-11 w-11 rounded-full shadow-[inset_0_-2px_3px_rgba(0,0,0,0.15),inset_0_2px_2px_rgba(255,255,255,0.35)] transition active:scale-95",
-                    look.skin === s.key && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
-                  )}
-                  style={{ background: s.hex }}
-                />
-              ))}
+            <div>
+              <Label>Skin</Label>
+              <div role="radiogroup" aria-label="Skin" className="mt-2 flex h-12 items-center gap-2.5">
+                {SKINS.map((s) => (
+                  <button
+                    key={s.key}
+                    role="radio"
+                    aria-checked={look.skin === s.key}
+                    aria-label={s.label}
+                    title={s.label}
+                    onClick={() => set({ skin: s.key })}
+                    className={cn(
+                      "h-10 w-10 rounded-full shadow-[inset_0_-2px_3px_rgba(0,0,0,0.15),inset_0_2px_2px_rgba(255,255,255,0.35)] transition active:scale-95",
+                      look.skin === s.key && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+                    )}
+                    style={{ background: s.hex }}
+                  />
+                ))}
+              </div>
             </div>
-          </>
+          </div>
         )}
         {tab === "Hair" && (
-          <Tiles look={look} options={HAIRS[look.person]} field="hair" onPick={set} label="Hair" />
+          <Tiles look={look} options={HAIRS[look.person]} field="hair" onPick={set} label="Hair" quiet />
         )}
         {tab === "Extras" && (
-          <>
-            <Tiles look={look} options={GLASSES} field="glasses" onPick={set} label="Glasses" />
-            <Tiles look={look} options={HATS} field="hat" onPick={set} label="Hat" />
-          </>
+          <Tiles look={look} options={GLASSES} field="glasses" onPick={set} label="Glasses" quiet />
         )}
       </div>
     </div>
@@ -111,17 +113,20 @@ function Tiles<F extends "hair" | "glasses" | "hat">({
   field,
   onPick,
   label,
+  quiet,
 }: {
   look: Look;
   options: readonly { key: string; label: string }[];
   field: F;
   onPick: (patch: Partial<Look>) => void;
   label: string;
+  /** No visible heading — the tab already says it. */
+  quiet?: boolean;
 }) {
   return (
     <div>
-      <Label>{label}</Label>
-      <div role="radiogroup" aria-label={label} className="mt-2 grid grid-cols-4 gap-2">
+      {!quiet && <Label>{label}</Label>}
+      <div role="radiogroup" aria-label={label} className={cn("grid grid-cols-4 gap-2", !quiet && "mt-2")}>
         {options.map((o) => {
           const on = look[field] === o.key;
           return (

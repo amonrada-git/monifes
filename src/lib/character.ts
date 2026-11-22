@@ -1,6 +1,6 @@
 // ─── You, in clay ─────────────────────────────────────────────────────────────
 // A few taps pick your character: who, skin, hair (a cast of 24 portraits,
-// all one pose and scale, in `public/cast/`), then dress-up items layered on
+// all one body, pose and scale, in `public/people/`), then dress-up items layered on
 // top (`public/dress/`). Everything was drawn once in the app's clay style
 // (Figma AI, "monifes — clay art"), so there's no cost per person.
 
@@ -39,6 +39,7 @@ export const GLASSES = [
   { key: "sunnies", label: "Sunnies" },
 ] as const;
 
+/** Hats are parked for now (art and placement kept; not offered). */
 export const HATS = [
   { key: "none", label: "None" },
   { key: "beanie", label: "Beanie" },
@@ -73,7 +74,7 @@ export function hairFor(person: Person, hair: string): Hair {
 const castId = (look: Pick<Look, "person" | "skin" | "hair">) =>
   `${look.person}-${look.skin}-${hairFor(look.person, look.hair)}`;
 
-export const castSrc = (look: Pick<Look, "person" | "skin" | "hair">) => `/cast/${castId(look)}.webp`;
+export const castSrc = (look: Pick<Look, "person" | "skin" | "hair">) => `/people/${castId(look)}.webp`;
 
 // ─── Dress-up placement ──────────────────────────────────────────────────────
 // Sizes are in eye-distances; `at` centres an item on the eyes, `bottom` puts
@@ -132,7 +133,7 @@ function parseLook(v: unknown): Look {
     skin: SKINS.find((s) => s.key === r.skin)?.key ?? DEFAULT_LOOK.skin,
     hair: hairFor(person, String(r.hair)),
     glasses: GLASSES.find((g) => g.key === r.glasses)?.key ?? "none",
-    hat: HATS.find((h) => h.key === r.hat)?.key ?? "none",
+    hat: "none", // hats are parked
   };
 }
 

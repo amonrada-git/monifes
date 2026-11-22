@@ -1,4 +1,4 @@
-// Usage: node scripts/art/line-up-cast.mjs <folder of 1024px PNGs> public/cast <eyes.json>
+// Usage: node scripts/art/line-up-cast.mjs <folder of 1024px PNGs> <out folder> <eyes.json>
 // Then regenerate src/lib/cast-eyes.ts from the JSON it writes.
 // Line up the cast by their eyes and feet (not hair height), so every hair
 // option of one person is the same size; report where the eyes land.

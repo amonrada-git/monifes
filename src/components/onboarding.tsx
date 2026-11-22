@@ -143,7 +143,7 @@ export function Onboarding({
         </header>
       )}
 
-      <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto px-6 pb-8">
+      <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto px-6">
         {step === "hello" && (
           <div key="hello" className="rise flex flex-1 flex-col pt-14">
             <h1 className="text-[32px] font-medium leading-[1.15]">Welcome to monifes</h1>
@@ -161,14 +161,11 @@ export function Onboarding({
               className="well mt-8 h-14 rounded-2xl px-5 text-xl placeholder:text-muted-2 focus:outline-none"
             />
             <p className="mt-3 text-sm text-muted">A first name or nickname. Only you see it.</p>
-            <div className="mt-auto pt-6">
+            <Footer below={<TextButton onClick={finish}>Skip for now</TextButton>}>
               <PrimaryButton disabled={!name.trim()} onClick={meet}>
                 Continue
               </PrimaryButton>
-              <button onClick={finish} className="mt-3 w-full text-center text-sm text-muted">
-                Skip for now
-              </button>
-            </div>
+            </Footer>
           </div>
         )}
 
@@ -183,7 +180,7 @@ export function Onboarding({
             <div className="mt-5">
               <CharacterBuilder look={look} onChange={setLook} name={name.trim()} />
             </div>
-            <div className="mt-auto pt-2">
+            <Footer>
               <PrimaryButton
                 onClick={() => {
                   saveMe({ name: name.trim(), look });
@@ -192,7 +189,7 @@ export function Onboarding({
               >
                 That’s me
               </PrimaryButton>
-            </div>
+            </Footer>
           </div>
         )}
 
@@ -230,10 +227,12 @@ export function Onboarding({
               <div className="mt-8">
                 <Keypad allowDecimal={currency.decimals > 0} onPress={pay.press} />
               </div>
+            </div>
+            <Footer className="mt-0">
               <PrimaryButton disabled={income <= 0} onClick={() => setStep("plan")}>
                 Show me
               </PrimaryButton>
-            </div>
+            </Footer>
           </div>
         )}
 
@@ -283,17 +282,11 @@ export function Onboarding({
               ))}
             </div>
 
-            <div className="mt-auto pt-8">
+            <Footer below={<TextButton onClick={finish}>I’ll do this later</TextButton>}>
               <PrimaryButton disabled={totalOf(baseline) <= 0} onClick={showComparison}>
                 See where I’m headed
               </PrimaryButton>
-              <button
-                onClick={finish}
-                className="mt-3 w-full text-center text-sm text-muted"
-              >
-                I’ll do this later
-              </button>
-            </div>
+            </Footer>
           </div>
         )}
 
@@ -337,12 +330,9 @@ function Welcome({
 
       <WelcomeScenes className="mt-6" />
 
-      <div className="mt-auto pt-6">
+      <Footer below={<TextButton onClick={onSkip}>Skip for now</TextButton>}>
         <PrimaryButton onClick={onBegin}>Begin</PrimaryButton>
-        <button onClick={onSkip} className="mt-3 w-full text-center text-sm text-muted">
-          Skip for now
-        </button>
-      </div>
+      </Footer>
     </div>
   );
 }
@@ -419,11 +409,9 @@ function PlanReveal({
         </div>
       </div>
 
-      {/* Pinned, so the choice is always in reach while the dots play out. */}
-      <div className="sticky bottom-0 -mx-6 mt-auto bg-linear-to-t from-background from-70% to-transparent px-6 pt-8">
+      <Footer below={<p className="text-xs text-muted">You can change it any time in Becoming.</p>}>
         <PrimaryButton onClick={onAccept}>Use this plan</PrimaryButton>
-        <p className="mt-3 text-center text-xs text-muted">You can change it any time in Becoming.</p>
-      </div>
+      </Footer>
     </div>
   );
 }
@@ -532,9 +520,9 @@ function Compare({
         </p>
       )}
 
-      <div className="mt-auto pt-8">
+      <Footer>
         <PrimaryButton onClick={onDone}>Start</PrimaryButton>
-      </div>
+      </Footer>
     </div>
   );
 }
@@ -545,6 +533,41 @@ function Line({ label, children }: { label: string; children: React.ReactNode })
       <span className="text-sm text-muted">{label}</span>
       <span className="text-lg font-medium">{children}</span>
     </div>
+  );
+}
+
+/**
+ * The bottom of every step: pinned to the screen's foot, one height on every
+ * screen — the main button, then a line below it (a quiet link, a note, or
+ * nothing) — so the button never moves from step to step.
+ */
+function Footer({
+  children,
+  below,
+  className,
+}: {
+  children: React.ReactNode;
+  below?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "sticky bottom-0 z-10 -mx-6 mt-auto bg-linear-to-t from-background from-75% to-transparent px-6 pb-6 pt-6",
+        className,
+      )}
+    >
+      {children}
+      <div className="mt-2 flex h-8 items-center justify-center text-center">{below}</div>
+    </div>
+  );
+}
+
+function TextButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="px-3 py-1.5 text-sm text-muted">
+      {children}
+    </button>
   );
 }
 
@@ -561,7 +584,7 @@ function PrimaryButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="mt-5 h-14 w-full btn-ink rounded-2xl text-lg font-medium transition active:scale-[0.98] disabled:opacity-30"
+      className="h-14 w-full btn-ink rounded-2xl text-lg font-medium transition active:scale-[0.98] disabled:opacity-30"
     >
       {children}
     </button>

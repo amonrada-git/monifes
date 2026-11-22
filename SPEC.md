@@ -162,14 +162,15 @@ quiet). Phone frame: iPhone 13 / 390px.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
   then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
   light/medium/deep skin), **Hair** (women: bob, ponytail, curly, bun · men: short, side part,
-  buzz cut, curly) and **Extras** (glasses: round, square, sunnies · hat: beanie, sun hat, cap).
-  Tiles show your own face with each option. 24 base portraits (`public/cast/`): 8 drawings
-  (one per person × hair, lined up by eyes and feet) in light skin, re-tinted to medium and
-  deep by `scripts/art/recolor-skin.mjs` — so changing skin changes nothing else. Outfit is
-  one per person for now (women: cream knit + sage; men: sage hoodie + charcoal). Dress-up cut-outs
-  (`public/dress/`) layered on top, placed from each portrait's measured eyes
-  (`src/lib/cast-eyes.ts`, rules in `character.ts`). Drawn once with Figma AI in "monifes —
-  clay art"; the line-up and cut-out scripts are in `scripts/art/`. No cost per person.
+  buzz cut, curly) and **Extras** (glasses: round, square, sunnies).
+  Tiles show your own face with each option. 24 portraits in `public/people/`, all one body,
+  outfit (cream knit, sage trousers, white sneakers — men and women alike) and wave: each hair
+  style's head is set on one shared body per person (`scripts/art/head-swap.mjs`), and medium
+  and deep skin are re-tints of the light drawing (`scripts/art/recolor-skin.mjs`) — so changing
+  skin or hair changes nothing else. Glasses are cut-outs (`public/dress/`) placed from each
+  portrait's measured eyes (`src/lib/cast-eyes.ts`, rules in `character.ts`). Hats are drawn and
+  placed too but parked (not offered) for now. Made once with Figma AI in "monifes — clay art";
+  scripts in `scripts/art/`. No cost per person.
   Saved locally under `monifes:me:v1` for now (not yet synced).
   Next: three mascots as your little friends — the sprout, a Siamese lucky cat, a Shiba Inu
   guide dog (concepts made; roles to decide). "You're the hero, the mascot is your little
@@ -184,6 +185,9 @@ quiet). Phone frame: iPhone 13 / 390px.
   turns its own pages until touched. Art from Figma AI ("monifes — clay art",
   ydtxVcnpFQreMj7ip1y4Pi, Signary team), 720px WebP in `public/scenes/`. Becoming's no-plan card shows the
   today → becoming ring demo (3% → 20% of pay kept).
+- ✅ Onboarding layout: every step's main button sits in one fixed spot at the foot of the
+  screen (a pinned footer of one height: button + a line below for a quiet link or note), and
+  the step scrolls under it.
 - ✅ Onboarding "magic moment" (first run, or Becoming → Make my plan): take-home pay → a
   suggested four-bucket plan drawn as one ring (the Home ring's band, cut into the buckets;
   income no bucket covers stays as the bare track). Spending share by difficulty
