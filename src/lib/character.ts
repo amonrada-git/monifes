@@ -32,11 +32,10 @@ export const HAIRS = {
   ],
 } as const;
 
+/** Square frames and sunglasses are drawn and placed too, but parked for now. */
 export const GLASSES = [
   { key: "none", label: "None" },
   { key: "round", label: "Round" },
-  { key: "square", label: "Square" },
-  { key: "sunnies", label: "Sunnies" },
 ] as const;
 
 /** Hats are parked for now (art and placement kept; not offered). */

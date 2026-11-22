@@ -162,7 +162,8 @@ quiet). Phone frame: iPhone 13 / 390px.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
   then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
   light/medium/deep skin), **Hair** (women: bob, ponytail, curly, bun · men: short, side part,
-  buzz cut, curly) and **Extras** (glasses: round, square, sunnies).
+  buzz cut, curly) and **Extras** (glasses: none or round; square frames, sunglasses and hats
+  are drawn but parked).
   Tiles show your own face with each option. 24 portraits in `public/people/v3/` (bump the
   folder when they change — cached old ones otherwise linger), all one body, outfit (cream
   knit, sage trousers, white sneakers — men and women alike), wave and head tilt: each hair
