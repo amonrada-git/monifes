@@ -86,7 +86,7 @@ export default function HomePage() {
 
       {/* Budget setup prompt — gentle, dashed */}
       {!data.budget && (
-        <Link href="/goals" className="mt-5 block">
+        <Link href="/becoming" className="mt-5 block">
           <div className="rounded-[var(--radius-card)] border border-dashed border-accent/70 p-5">
             <p className="text-[13px] font-medium text-accent">Budget</p>
             <p className="mt-1 text-[15px] font-medium leading-snug text-accent">

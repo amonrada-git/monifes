@@ -343,7 +343,7 @@ function PlanReveal({
       {/* Pinned, so the choice is always in reach while the dots play out. */}
       <div className="sticky bottom-0 -mx-6 mt-auto bg-linear-to-t from-background from-70% to-transparent px-6 pt-8">
         <PrimaryButton onClick={onAccept}>Use this plan</PrimaryButton>
-        <p className="mt-3 text-center text-xs text-muted">You can change it any time in Goals.</p>
+        <p className="mt-3 text-center text-xs text-muted">You can change it any time in Becoming.</p>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import { Card, SectionLabel } from "@/components/ui";
 import { PlanRing, RingKey, Swatch, WealthShare } from "@/components/plan-ring";
 import { Onboarding } from "@/components/onboarding";
 
-export default function GoalsPage() {
+export default function BecomingPage() {
   const { data, ready } = useStore();
   const [planning, setPlanning] = useState(false);
 
@@ -37,7 +37,7 @@ export default function GoalsPage() {
 
   return (
     <div className="px-5 pb-8 pt-5">
-      <h1 className="text-2xl font-medium">Goals</h1>
+      <h1 className="text-2xl font-medium">Becoming</h1>
 
       {!plan ? (
         <Card className="mt-5">
@@ -59,12 +59,12 @@ export default function GoalsPage() {
           {/* The plan — income as one ring */}
           <Card className="mt-5">
             <div className="flex items-baseline justify-between">
-              <SectionLabel>Monthly plan</SectionLabel>
+              <SectionLabel>Who you’re becoming</SectionLabel>
               <span className="tnum text-xs text-muted">
                 {formatMoney(income, currency)} · {difficultyOf(settings.difficulty).ratio}
               </span>
             </div>
-            <p className="mt-2 text-xl font-medium">
+            <p className="mt-2 text-xl font-medium text-balance">
               Build <span className="tnum">{formatMoney(wealthOf(plan), currency)}</span> of wealth a month
             </p>
             <p className="tnum mt-1 text-xs text-muted">
@@ -127,7 +127,7 @@ export default function GoalsPage() {
           {/* Where you started */}
           {baseline && (
             <Card className="mt-4">
-              <SectionLabel>Where you started → the plan</SectionLabel>
+              <SectionLabel>Where you started → who you’re becoming</SectionLabel>
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <figure>
                   <figcaption className="mb-3 text-center text-[13px] text-muted">Started</figcaption>
@@ -136,7 +136,7 @@ export default function GoalsPage() {
                   </PlanRing>
                 </figure>
                 <figure>
-                  <figcaption className="mb-3 text-center text-[13px] text-muted">Plan</figcaption>
+                  <figcaption className="mb-3 text-center text-[13px] text-muted">Becoming</figcaption>
                   <PlanRing parts={planParts(plan, income)} size="sm" label="Where your money goes on the plan">
                     <WealthShare budget={plan} income={income} />
                   </PlanRing>

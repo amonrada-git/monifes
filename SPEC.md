@@ -114,7 +114,7 @@ Bottom navigation, four tabs:
 - 🏠 **Home** — daily heartbeat: check-in (`+` capture / "No-spend day"), the growing plant,
   gentle budget-setup prompt, recent activity, Need:Want balance donut.
 - 📊 **Insights** — the mirror: spending organized by feeling; emotional patterns over time.
-- 🚩 **Goals** — the 4-bucket plan + difficulty selector; savings goals and progress.
+- 🌱 **Becoming** — the 4-bucket plan + difficulty selector; savings goals and progress.
 - 👤 **Profile** — settings: currency, target/difficulty, preferences.
 
 **Look & feel (updated Jul 2026):** design reference is **thedot.space** — warm greige paper
@@ -155,14 +155,14 @@ hierarchy via size & gray), Inter font, 8px card radius, month-as-dot-grid on In
   skipped; date/shop/amount columns guessed then confirmable; payments & refunds left out; each
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
-- ✅ Onboarding "magic moment" (first run, or Goals → Make my plan): take-home pay → a
+- ✅ Onboarding "magic moment" (first run, or Becoming → Make my plan): take-home pay → a
   suggested four-bucket plan drawn as one ring (the Home ring's band, cut into the buckets;
   income no bucket covers stays as the bare track). Spending share by difficulty
   (Easy 85% / Recommended 80% / Hard 75%) split by the Need:Want target; the rest is half
   invested, half saved. Toggling difficulty reshapes the ring live. Then "today, roughly"
   per bucket → Now vs Plan rings (% that builds wealth in the hole), monthly build, Need:Want now → target, the 12-month
   difference. Income + baseline live on `profiles` (migration 0002).
-- ✅ Goals tab: the plan, this month's spending vs plan per bucket, start → plan, redo.
+- ✅ Becoming tab (was "Goals" — named for the transformation, not a target): the plan, this month's spending vs plan per bucket, start → plan, redo.
 - ⏳ Launch needs: export my data, delete my account, privacy policy, deploy to monifes.com
 
 ---
