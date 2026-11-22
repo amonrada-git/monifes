@@ -8,17 +8,20 @@ const HEAD = { x: 220, y: 30, size: 280 };
 /**
  * Your clay character: the portrait, with any dress-up items layered on top,
  * placed from where that portrait's eyes are. Fills its (square) parent.
- * `crop="head"` zooms in on the face, for option tiles.
+ * `crop="head"` zooms in on the face, for option tiles; `cut` draws the figure
+ * alone on transparency, to stand in a scene.
  */
 export function ClayYou({
   look,
   crop = "full",
+  cut = false,
   label,
   priority,
   className,
 }: {
   look: Look;
   crop?: "full" | "head";
+  cut?: boolean;
   label?: string;
   priority?: boolean;
   className?: string;
@@ -40,7 +43,7 @@ export function ClayYou({
         }}
       >
         <Image
-          src={castSrc(look)}
+          src={castSrc(look, cut)}
           alt=""
           fill
           sizes={crop === "head" ? "200px" : "(max-width: 480px) 90vw, 420px"}

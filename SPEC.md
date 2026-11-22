@@ -160,30 +160,28 @@ quiet). Phone frame: iPhone 13 / 390px.
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
-  then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
-  light/medium/deep skin), **Hair** (women: bob, ponytail, curly, bun · men: short, side part,
-  buzz cut, curly) and **Extras** (glasses: none or round; square frames, sunglasses and hats
-  are drawn but parked).
-  Tiles show your own face with each option. 24 portraits in `public/people/v3/` (bump the
-  folder when they change — cached old ones otherwise linger), all one body, outfit (cream
-  knit, sage trousers, white sneakers — men and women alike), wave and head tilt: each hair
-  style's head is turned to the body's tilt and set on one shared body per person (women: the
-  bun drawing; men: the short-hair drawing) by `scripts/art/head-swap.mjs`; medium and deep
-  skin are re-tints of the light drawing (`scripts/art/recolor-skin.mjs`, given the eyes); the
-  backdrop is smoothed by `scripts/art/smooth-backdrop.mjs`. Changing skin or hair changes
-  nothing else. The curly woman has chin-length curls (long curls fell behind the hand). Glasses are cut-outs (`public/dress/`) placed from each
-  portrait's measured eyes (`src/lib/cast-eyes.ts`, rules in `character.ts`). Hats are drawn and
-  placed too but parked (not offered) for now. Made once with Figma AI in "monifes — clay art";
-  scripts in `scripts/art/`. No cost per person.
-  Saved locally under `monifes:me:v1` for now (not yet synced).
-  Next: three mascots as your little friends — the sprout, a Siamese lucky cat, a Shiba Inu
-  guide dog (concepts made; roles to decide). "You're the hero, the mascot is your little
-  friend."
+  then "Which one feels like you?" — make your clay you in three tabs: **Hair** (bob, ponytail,
+  big curls, bun, short, side part, buzz cut, short curls), **Skin** (light, medium, deep) and
+  **Glasses** (none, round). No gender question: people pick the hair they like. Every option is a
+  tile of your own face with it.
+  The art: 24 portraits in `public/people/v4/` (bump the folder when they change — cached old ones
+  otherwise linger), all one body, one face (the bob drawing's), one pose and outfit (cream knit,
+  sage trousers): each hair style's head is turned to the body's tilt and set on the shared body
+  (`scripts/art/head-swap.mjs`), then given the bob's face and neck (`scripts/art/face-swap.mjs`);
+  medium and deep skin are re-tints (`scripts/art/recolor-skin.mjs`); the backdrop is smoothed
+  (`scripts/art/smooth-backdrop.mjs`); see-through cut-outs for scenes in `cut/`
+  (`scripts/art/cut-figure.mjs`). Glasses are cut-outs (`public/dress/`) placed from each hair
+  style's measured eyes (`src/lib/cast-eyes.ts`, rules in `character.ts`). Square frames,
+  sunglasses and hats are drawn and placed but parked. Made once with Figma AI in "monifes —
+  clay art"; no cost per person. Saved locally under `monifes:me:v1` for now (not yet synced).
+  Next: three mascots as your little friends — the sprout, a Siamese lucky cat, a Shiba Inu guide
+  dog (concepts made; roles to decide). "You're the hero, the mascot is your little friend."
   Tried and dropped: a 3D clay figure in three.js (not cute enough), an ink line-art builder
   (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a person; in git
   history, commit 0c93eb9).
-- ✅ Welcome: "See who you could become." — an album of six clay moments with no one in them
-  (places, not people — the life is yours to picture): more time with family · free to travel ·
+- ✅ Welcome: "See who you could become." — an album of six clay moments with *your* character
+  standing in each (the scenes are drawn without people; your see-through figure stands beside the
+  props, placed by hand per scene — `PLACE` in `welcome-scenes.tsx`): more time with family · free to travel ·
   building your own thing · living in abundance · at peace with money · watching your wealth
   grow. A swipeable scroll-snap stack (neighbours tucked behind, tilted), caption + page dots;
   turns its own pages until touched. Art from Figma AI ("monifes — clay art",

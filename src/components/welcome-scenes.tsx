@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import type { Look } from "@/lib/character";
+import { ClayYou } from "./clay-you";
 
 /**
  * Who you could become, as an album of clay photos: one character, the lives
@@ -13,7 +15,8 @@ import { cn } from "@/lib/utils";
  * straightens and comes forward on top. It turns its own pages until someone touches it; with
  * reduced motion it stays put.
  *
- * The moments are places, not people — the life is yours to picture in them.
+ * The moments are places; you stand in each one — your own clay character,
+ * waving, placed by hand beside the things that make it (see PLACE).
  */
 const SCENES = [
   {
@@ -48,6 +51,51 @@ const SCENES = [
   },
 ] as const;
 
+/**
+ * Where you stand in each moment, as fractions of the picture: x is your
+ * centre, feet where your feet land, h your height. Tuned by eye so you sit
+ * beside the props, not over them.
+ */
+const PLACE: Record<(typeof SCENES)[number]["key"], { x: number; feet: number; h: number }> = {
+  family: { x: 0.15, feet: 0.94, h: 0.5 },
+  travel: { x: 0.14, feet: 0.94, h: 0.5 },
+  build: { x: 0.13, feet: 0.95, h: 0.5 },
+  abundant: { x: 0.14, feet: 0.94, h: 0.5 },
+  peaceful: { x: 0.88, feet: 0.95, h: 0.47 },
+  wealthier: { x: 0.12, feet: 0.95, h: 0.46 },
+};
+/** Where the figure sits in its own (square) picture: hair top and feet. */
+const FIG = { top: 65 / 720, feet: 670 / 720 };
+
+/** You, standing in a scene, with a soft shadow at your feet. */
+function StandIn({ look, at }: { look: Look; at: { x: number; feet: number; h: number } }) {
+  const size = at.h / (FIG.feet - FIG.top);
+  return (
+    <>
+      <span
+        aria-hidden
+        className="absolute rounded-[50%] bg-[#5a4a3a]/25 blur-[6px]"
+        style={{
+          left: `${(at.x - size * 0.17) * 100}%`,
+          top: `${(at.feet - size * 0.03) * 100}%`,
+          width: `${size * 0.34 * 100}%`,
+          height: `${size * 0.05 * 100}%`,
+        }}
+      />
+      <span
+        className="absolute"
+        style={{
+          left: `${(at.x - size / 2) * 100}%`,
+          top: `${(at.feet - FIG.feet * size) * 100}%`,
+          width: `${size * 100}%`,
+        }}
+      >
+        <ClayYou look={look} cut className="w-full" />
+      </span>
+    </>
+  );
+}
+
 /** Card width: most of the strip, but short enough by height that Begin stays in view. */
 const CARD = "min(68%,38dvh)";
 /** Prints overlap like a fanned stack; the centred one sits on top. */
@@ -56,7 +104,7 @@ const OVERLAP = 44;
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function WelcomeScenes({ className }: { className?: string }) {
+export function WelcomeScenes({ look, className }: { look?: Look; className?: string }) {
   const track = useRef<HTMLDivElement>(null);
   const cards = useRef<(HTMLDivElement | null)[]>([]);
   const [active, setActive] = useState(0);
@@ -151,6 +199,7 @@ export function WelcomeScenes({ className }: { className?: string }) {
               draggable={false}
               className="h-full w-full select-none object-cover"
             />
+            {look && <StandIn look={look} at={PLACE[s.key]} />}
           </div>
         ))}
         <div aria-hidden className="shrink-0" style={{ width: `calc((100% - ${CARD}) / 2)` }} />

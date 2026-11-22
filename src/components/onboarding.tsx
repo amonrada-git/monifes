@@ -212,7 +212,7 @@ export function Onboarding({
         )}
 
         {step === "welcome" && (
-          <Welcome name={name.trim()} onBegin={() => setStep("income")} onSkip={finish} />
+          <Welcome name={name.trim()} look={look} onBegin={() => setStep("income")} onSkip={finish} />
         )}
 
         {step === "income" && (
@@ -329,10 +329,12 @@ export function Onboarding({
 
 function Welcome({
   name,
+  look,
   onBegin,
   onSkip,
 }: {
   name: string;
+  look: Look;
   onBegin: () => void;
   onSkip: () => void;
 }) {
@@ -346,7 +348,7 @@ function Welcome({
         It starts with what you take home each month. Only you can see it.
       </p>
 
-      <WelcomeScenes className="mt-6" />
+      <WelcomeScenes look={look} className="mt-6" />
 
       <Footer below={<TextButton onClick={onSkip}>Skip for now</TextButton>}>
         <PrimaryButton onClick={onBegin}>Begin</PrimaryButton>

@@ -1,15 +1,11 @@
 // ─── You, in clay ─────────────────────────────────────────────────────────────
-// A few taps pick your character: who, skin, hair (a cast of 24 portraits,
-// all one body, pose and scale, in `public/people/`), then dress-up items layered on
-// top (`public/dress/`). Everything was drawn once in the app's clay style
-// (Figma AI, "monifes — clay art"), so there's no cost per person.
+// A few taps pick your character: hair and skin (24 portraits in
+// `public/people/`, all one body, one face, one pose — only the hair and skin
+// change), then glasses layered on top (`public/dress/`). No gender question:
+// people pick the hair they like. Everything was drawn once in the app's clay
+// style (Figma AI, "monifes — clay art"), so there's no cost per person.
 
 import { EYES } from "./cast-eyes";
-
-export const PEOPLE = [
-  { key: "woman", label: "Woman" },
-  { key: "man", label: "Man" },
-] as const;
 
 export const SKINS = [
   { key: "light", label: "Light", hex: "#eccaa6" },
@@ -17,20 +13,16 @@ export const SKINS = [
   { key: "deep", label: "Deep", hex: "#5f3c26" },
 ] as const;
 
-export const HAIRS = {
-  woman: [
-    { key: "bob", label: "Bob" },
-    { key: "ponytail", label: "Ponytail" },
-    { key: "curly", label: "Curly" },
-    { key: "bun", label: "Bun" },
-  ],
-  man: [
-    { key: "short", label: "Short" },
-    { key: "side", label: "Side part" },
-    { key: "buzz", label: "Buzz cut" },
-    { key: "curly", label: "Curly" },
-  ],
-} as const;
+export const HAIRS = [
+  { key: "bob", label: "Bob" },
+  { key: "ponytail", label: "Ponytail" },
+  { key: "big-curls", label: "Big curls" },
+  { key: "bun", label: "Bun" },
+  { key: "short", label: "Short" },
+  { key: "side", label: "Side part" },
+  { key: "buzz", label: "Buzz cut" },
+  { key: "short-curls", label: "Short curls" },
+] as const;
 
 /** Square frames and sunglasses are drawn and placed too, but parked for now. */
 export const GLASSES = [
@@ -46,11 +38,9 @@ export const HATS = [
   { key: "cap", label: "Cap" },
 ] as const;
 
-type Person = (typeof PEOPLE)[number]["key"];
-export type Hair = (typeof HAIRS)[Person][number]["key"];
+export type Hair = (typeof HAIRS)[number]["key"];
 
 export interface Look {
-  person: Person;
   skin: (typeof SKINS)[number]["key"];
   hair: Hair;
   glasses: (typeof GLASSES)[number]["key"];
@@ -58,23 +48,24 @@ export interface Look {
 }
 
 export const DEFAULT_LOOK: Look = {
-  person: "woman",
   skin: "light",
   hair: "bob",
   glasses: "none",
   hat: "none",
 };
 
-/** Hair only comes in the styles drawn for each person; switching keeps it if it can. */
-export function hairFor(person: Person, hair: string): Hair {
-  return HAIRS[person].find((h) => h.key === hair)?.key ?? HAIRS[person][0].key;
-}
+// Looks saved before the hair list was one list (woman/man + style) still map.
+const OLD_HAIR: Record<string, Hair> = {
+  "woman-curly": "big-curls",
+  "man-curly": "short-curls",
+};
 
-const castId = (look: Pick<Look, "person" | "skin" | "hair">) =>
-  `${look.person}-${look.skin}-${hairFor(look.person, look.hair)}`;
+const castId = (look: Pick<Look, "skin" | "hair">) => `${look.skin}-${look.hair}`;
 
 // Bump the folder when the pictures change, so no cached old ones are shown.
-export const castSrc = (look: Pick<Look, "person" | "skin" | "hair">) => `/people/v3/${castId(look)}.webp`;
+// `cut`: the figure alone on transparency (same canvas), for standing in a scene.
+export const castSrc = (look: Pick<Look, "skin" | "hair">, cut = false) =>
+  `/people/v4/${cut ? "cut/" : ""}${castId(look)}.webp`;
 
 // ─── Dress-up placement ──────────────────────────────────────────────────────
 // Sizes are in eye-distances; `at` centres an item on the eyes, `bottom` puts
@@ -96,7 +87,7 @@ export type Placed = { src: string; left: number; top: number; width: number; he
 
 /** Where each worn item goes on a portrait, as fractions of the picture (0–1). */
 export function dressOf(look: Look): Placed[] {
-  const eyes = EYES[castId(look)];
+  const eyes = EYES[look.hair];
   if (!eyes) return [];
   const [[lx, ly], [rx, ry]] = [eyes.l, eyes.r];
   const d = Math.hypot(rx - lx, ry - ly);
@@ -127,11 +118,11 @@ export function dressOf(look: Look): Placed[] {
 /** Unknown values (an older or newer app version) fall back to the default. */
 function parseLook(v: unknown): Look {
   const r = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
-  const person = PEOPLE.find((p) => p.key === r.person)?.key ?? DEFAULT_LOOK.person;
+  const hair =
+    HAIRS.find((x) => x.key === r.hair)?.key ?? OLD_HAIR[`${r.person}-${r.hair}`] ?? DEFAULT_LOOK.hair;
   return {
-    person,
     skin: SKINS.find((s) => s.key === r.skin)?.key ?? DEFAULT_LOOK.skin,
-    hair: hairFor(person, String(r.hair)),
+    hair,
     glasses: GLASSES.find((g) => g.key === r.glasses)?.key ?? "none",
     hat: "none", // hats are parked
   };
