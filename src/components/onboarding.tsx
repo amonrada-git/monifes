@@ -175,9 +175,11 @@ export function Onboarding({
         {step === "look" && (
           <div key="look" className="rise flex flex-1 flex-col pt-2">
             <h1 className="text-[28px] font-medium leading-tight">
-              What do you look like, {name.trim()}?
+              Which one feels like you, {name.trim()}?
             </h1>
-            <p className="mt-2 text-sm text-muted">Pick your clay you. You can change it any time.</p>
+            <p className="mt-2 text-sm text-muted">
+              Pick a little you for the journey. You can change it any time.
+            </p>
             <div className="mt-5">
               <CharacterBuilder look={look} onChange={setLook} name={name.trim()} />
             </div>

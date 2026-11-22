@@ -160,10 +160,11 @@ quiet). Phone frame: iPhone 13 / 390px.
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
-  then "What do you look like?" — two answers (woman/man · light/medium/deep skin) pick your
+  then "Which one feels like you?" — two answers (woman/man · light/medium/deep skin) pick your
   character from a cast of six clay people; the portrait swaps instantly on the card, and the
   welcome album then shows *that* character in all six moments. Art: `public/cast/<id>/`
-  (portrait + six moments each, 720px WebP), made once with Figma AI in "monifes — clay art" —
+  (portrait + six moments each, 720px WebP; portraits share one pose and are lined up to the same
+  height, feet line and background tone), made once with Figma AI in "monifes — clay art" —
   no running cost. Saved locally under `monifes:me:v1` for now (not yet synced).
   Tried and dropped along the way: a 3D clay figure in three.js (not cute enough), an ink
   line-art builder (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a
