@@ -256,7 +256,7 @@ function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void 
     <div className="rise flex flex-1 flex-col pt-14">
       <p className="text-sm text-muted">monifes</p>
       <h1 className="mt-3 text-[32px] font-medium leading-[1.15]">
-        Let’s see where your money could go.
+        Let’s see who your money can help you become.
       </h1>
       <p className="mt-3 text-[15px] leading-relaxed text-muted">
         One number to start: what you take home each month. Only you can see it.
