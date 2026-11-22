@@ -65,7 +65,11 @@ export default function GoalsPage() {
               </span>
             </div>
             <p className="mt-2 text-xl font-medium">
-              Build <span className="tnum">{formatMoney(wealthOf(plan), currency)}</span> a month
+              Build <span className="tnum">{formatMoney(wealthOf(plan), currency)}</span> of wealth a month
+            </p>
+            <p className="tnum mt-1 text-xs text-muted">
+              {formatMoney(plan.investments, currency)} invested · {formatMoney(plan.savings, currency)}{" "}
+              saved for goals
             </p>
             <PlanRing
               parts={planParts(plan, income)}
@@ -140,7 +144,7 @@ export default function GoalsPage() {
               </div>
               <RingKey className="mt-5" />
               <div className="mt-4 flex items-baseline justify-between text-sm">
-                <span className="text-muted">Building each month</span>
+                <span className="text-muted">Wealth built each month</span>
                 <span className="tnum font-medium">
                   {formatMoney(wealthOf(baseline), currency)}
                   <span className="text-muted"> → </span>

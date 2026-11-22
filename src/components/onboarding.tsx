@@ -289,8 +289,13 @@ function PlanReveal({
     <div key="plan" className="rise flex flex-1 flex-col pt-4">
       <p className="text-sm text-muted">Your plan for {formatMoney(income, currency)}</p>
       <h1 className="mt-1 text-[28px] font-medium leading-tight">
-        Build <span className="tnum">{formatMoney(wealth, currency)}</span> every month.
+        Build <span className="tnum">{formatMoney(wealth, currency)}</span> of wealth{" "}
+        <span className="block">every month.</span>
       </h1>
+      <p className="tnum mt-2 text-sm text-muted">
+        {formatMoney(plan.investments, currency)} invested · {formatMoney(plan.savings, currency)} saved
+        for goals
+      </p>
 
       <PlanRing
         parts={planParts(plan, income)}
@@ -414,7 +419,7 @@ function Compare({
       <RingKey className="mt-5" />
 
       <div className="mt-8 flex flex-col gap-4">
-        <Line label="You build each month">
+        <Line label="Wealth you build each month">
           <span className="tnum">{formatMoney(nowWealth, currency)}</span>
           <span className="text-muted"> → </span>
           <span className="tnum">{formatMoney(planWealth, currency)}</span>
@@ -433,7 +438,7 @@ function Compare({
       <p className="mt-6 text-[15px] leading-relaxed">
         {yearMore > 0
           ? `That’s ${formatMoney(yearMore, currency)} more set aside by this time next year — before any growth.`
-          : "You’re already building at least as much as the plan. Lovely — keep going."}
+          : "You’re already building at least as much wealth as the plan. Lovely — keep going."}
       </p>
       {gap < 0 && (
         <p className="mt-2 text-sm leading-relaxed text-muted">
