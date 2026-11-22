@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { BUCKETS, Budget, Bucket, DIFFICULTIES, Difficulty } from "@/lib/types";
@@ -95,7 +96,7 @@ export function Onboarding({
     compare: "now",
   };
 
-  return (
+  const screen = (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {step !== "welcome" && (
         <header className="flex items-center justify-between px-3 pb-1 pt-4">
@@ -244,6 +245,10 @@ export function Onboarding({
       </div>
     </div>
   );
+
+  // Above the whole phone, tab bar included — not just the scrolling page.
+  const host = typeof document === "undefined" ? null : document.getElementById("phone");
+  return host ? createPortal(screen, host) : screen;
 }
 
 function Welcome({ onBegin, onSkip }: { onBegin: () => void; onSkip: () => void }) {
