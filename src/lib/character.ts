@@ -1,7 +1,10 @@
 // ─── You, in clay ─────────────────────────────────────────────────────────────
-// Two quick answers pick your character from a cast of six, drawn once in the
-// app's clay style (Figma AI, "monifes — clay art"): one portrait each, all in
-// the same pose and scale, in `public/cast/<id>/`.
+// A few taps pick your character: who, skin, hair (a cast of 24 portraits,
+// all one pose and scale, in `public/cast/`), then dress-up items layered on
+// top (`public/dress/`). Everything was drawn once in the app's clay style
+// (Figma AI, "monifes — clay art"), so there's no cost per person.
+
+import { EYES } from "./cast-eyes";
 
 export const PEOPLE = [
   { key: "woman", label: "Woman" },
@@ -14,22 +17,122 @@ export const SKINS = [
   { key: "deep", label: "Deep", hex: "#5f3c26" },
 ] as const;
 
+export const HAIRS = {
+  woman: [
+    { key: "bob", label: "Bob" },
+    { key: "ponytail", label: "Ponytail" },
+    { key: "curly", label: "Curly" },
+    { key: "bun", label: "Bun" },
+  ],
+  man: [
+    { key: "short", label: "Short" },
+    { key: "side", label: "Side part" },
+    { key: "buzz", label: "Buzz cut" },
+    { key: "curly", label: "Curly" },
+  ],
+} as const;
+
+export const GLASSES = [
+  { key: "none", label: "None" },
+  { key: "round", label: "Round" },
+  { key: "square", label: "Square" },
+  { key: "sunnies", label: "Sunnies" },
+] as const;
+
+export const HATS = [
+  { key: "none", label: "None" },
+  { key: "beanie", label: "Beanie" },
+  { key: "sunhat", label: "Sun hat" },
+  { key: "cap", label: "Cap" },
+] as const;
+
+type Person = (typeof PEOPLE)[number]["key"];
+export type Hair = (typeof HAIRS)[Person][number]["key"];
+
 export interface Look {
-  person: (typeof PEOPLE)[number]["key"];
+  person: Person;
   skin: (typeof SKINS)[number]["key"];
+  hair: Hair;
+  glasses: (typeof GLASSES)[number]["key"];
+  hat: (typeof HATS)[number]["key"];
 }
 
-export const DEFAULT_LOOK: Look = { person: "woman", skin: "light" };
+export const DEFAULT_LOOK: Look = {
+  person: "woman",
+  skin: "light",
+  hair: "bob",
+  glasses: "none",
+  hat: "none",
+};
 
-/** A picture of one of the six characters (for now, just their portrait). */
-export const castSrc = (look: Look, pic: string) => `/cast/${look.person}-${look.skin}/${pic}.webp`;
+/** Hair only comes in the styles drawn for each person; switching keeps it if it can. */
+export function hairFor(person: Person, hair: string): Hair {
+  return HAIRS[person].find((h) => h.key === hair)?.key ?? HAIRS[person][0].key;
+}
+
+const castId = (look: Pick<Look, "person" | "skin" | "hair">) =>
+  `${look.person}-${look.skin}-${hairFor(look.person, look.hair)}`;
+
+export const castSrc = (look: Pick<Look, "person" | "skin" | "hair">) => `/cast/${castId(look)}.webp`;
+
+// ─── Dress-up placement ──────────────────────────────────────────────────────
+// Sizes are in eye-distances; `at` centres an item on the eyes, `bottom` puts
+// its lower edge that far above (negative) the eye line. Tuned by eye on all
+// 24 portraits. `aspect` is height ÷ width of the cut-out.
+
+type Rule = { aspect: number; w: number; h?: number } & ({ at: number } | { bottom: number });
+
+const DRESS: Record<string, Rule> = {
+  round: { aspect: 379 / 922, w: 2.13, at: 0.02 },
+  square: { aspect: 387 / 961, w: 1.98, at: 0.04 },
+  sunnies: { aspect: 377 / 932, w: 2.0, at: 0.02 },
+  beanie: { aspect: 834 / 742, w: 2.6, h: 1.94, bottom: -0.36 },
+  sunhat: { aspect: 580 / 916, w: 3.5, bottom: -0.42 },
+  cap: { aspect: 644 / 768, w: 2.75, bottom: -0.5 },
+};
+
+export type Placed = { src: string; left: number; top: number; width: number; height: number; rotate: number };
+
+/** Where each worn item goes on a portrait, as fractions of the picture (0–1). */
+export function dressOf(look: Look): Placed[] {
+  const eyes = EYES[castId(look)];
+  if (!eyes) return [];
+  const [[lx, ly], [rx, ry]] = [eyes.l, eyes.r];
+  const d = Math.hypot(rx - lx, ry - ly);
+  const ang = Math.atan2(ry - ly, rx - lx);
+  const [mx, my] = [(lx + rx) / 2, (ly + ry) / 2];
+  // Hat before glasses so frames sit over a brim's shadow, not under it.
+  return [look.hat, look.glasses]
+    .filter((k) => k !== "none")
+    .map((k) => {
+      const r = DRESS[k];
+      const w = r.w * d;
+      const h = r.h ? r.h * d : w * r.aspect;
+      const off = "at" in r ? r.at * d : r.bottom * d - h / 2;
+      // Along the head's tilt; the sign keeps hats over the crown of the turned head.
+      const cx = mx + Math.sin(ang) * off;
+      const cy = my + Math.cos(ang) * off;
+      return {
+        src: `/dress/${k}.webp`,
+        left: cx / 720,
+        top: cy / 720,
+        width: w / 720,
+        height: h / 720,
+        rotate: (ang * 180) / Math.PI,
+      };
+    });
+}
 
 /** Unknown values (an older or newer app version) fall back to the default. */
 function parseLook(v: unknown): Look {
   const r = (v && typeof v === "object" ? v : {}) as Record<string, unknown>;
+  const person = PEOPLE.find((p) => p.key === r.person)?.key ?? DEFAULT_LOOK.person;
   return {
-    person: PEOPLE.find((p) => p.key === r.person)?.key ?? DEFAULT_LOOK.person,
+    person,
     skin: SKINS.find((s) => s.key === r.skin)?.key ?? DEFAULT_LOOK.skin,
+    hair: hairFor(person, String(r.hair)),
+    glasses: GLASSES.find((g) => g.key === r.glasses)?.key ?? "none",
+    hat: HATS.find((h) => h.key === r.hat)?.key ?? "none",
   };
 }
 

@@ -160,15 +160,18 @@ quiet). Phone frame: iPhone 13 / 390px.
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
 - ✅ Meet you (first two onboarding steps): "Welcome to monifes / What should we call you?",
-  then "Which one feels like you?" — two answers (woman/man · light/medium/deep skin) pick your
-  clay character from a cast of six; the portrait swaps instantly on the card. Portraits in
-  `public/cast/<id>/portrait.webp`, all one pose, lined up to the same height, feet line and
-  background tone. Made once with Figma AI in "monifes — clay art" — no running cost. Saved
-  locally under `monifes:me:v1` for now (not yet synced).
-  Next (decided 2026-11-22): more base characters (hair options) + clay dress-up accessories
-  layered on the portrait (glasses, hats… — tested, looks natural), and three mascots as your
-  little friends: the sprout, a Siamese lucky cat, a Shiba Inu guide dog. "You're the hero,
-  the mascot is your little friend."
+  then "Which one feels like you?" — make your clay you in three tabs: **You** (woman/man ·
+  light/medium/deep skin), **Hair** (women: bob, ponytail, curly, bun · men: short, side part,
+  buzz cut, curly) and **Extras** (glasses: round, square, sunnies · hat: beanie, sun hat, cap).
+  Tiles show your own face with each option. 24 base portraits (`public/cast/`, one pose,
+  lined up by eyes and feet so hair never changes the size) + dress-up cut-outs
+  (`public/dress/`) layered on top, placed from each portrait's measured eyes
+  (`src/lib/cast-eyes.ts`, rules in `character.ts`). Drawn once with Figma AI in "monifes —
+  clay art"; the line-up and cut-out scripts are in `scripts/art/`. No cost per person.
+  Saved locally under `monifes:me:v1` for now (not yet synced).
+  Next: three mascots as your little friends — the sprout, a Siamese lucky cat, a Shiba Inu
+  guide dog (concepts made; roles to decide). "You're the hero, the mascot is your little
+  friend."
   Tried and dropped: a 3D clay figure in three.js (not cute enough), an ink line-art builder
   (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a person; in git
   history, commit 0c93eb9).
