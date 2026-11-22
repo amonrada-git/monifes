@@ -159,8 +159,11 @@ quiet). Phone frame: iPhone 13 / 390px.
   skipped; date/shop/amount columns guessed then confirmable; payments & refunds left out; each
   purchase tagged with bucket + feeling (shop's usual bucket preselected). Ids are derived from
   the row, so re-importing a statement only shows what's new. Not yet tried on a real Amex file.
-- ✅ Welcome: "See who you could become." — 3D clay scenes of one original character
-  (Wealthier · Abundant · At peace) that crossfade, with a tray to pick one. Art generated
+- ✅ Welcome: "See who you could become." — an album of 3D clay photos of one original
+  character, wealth as more than money: more time with family · free to travel · building
+  your own thing · living in abundance · at peace with money · watching your wealth grow.
+  A swipeable scroll-snap stack (neighbours tucked behind, tilted), caption + page dots;
+  turns its own pages until touched. Art generated
   with Figma AI in the Signary team file "monifes — clay art" (ydtxVcnpFQreMj7ip1y4Pi),
   shipped as 720px WebP in `public/welcome/`. Becoming's no-plan card shows the
   today → becoming ring demo (3% → 20% of pay kept).

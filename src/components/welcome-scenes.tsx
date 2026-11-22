@@ -1,82 +1,178 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * Who you could become, in clay: one character, three lives the plan leads
- * to. The scenes crossfade on their own until someone taps one; with reduced
- * motion they hold still on the first.
+ * Who you could become, as an album of clay photos: one character, the lives
+ * the plan makes room for — wealth is time, freedom and calm as much as money.
+ *
+ * A swipeable strip (native scroll-snap) of overlapping prints: neighbours
+ * sit tucked behind at the sides, smaller and tilted; the centred one
+ * straightens and comes forward on top. It turns its own pages until someone touches it; with
+ * reduced motion it stays put.
  */
 const SCENES = [
   {
-    key: "wealthier",
-    label: "Wealthier",
-    alt: "A clay figure watering a little tree whose leaves are gold coins, beside a jar of coins",
+    key: "family",
+    caption: "More time with family",
+    alt: "A clay figure laughing on a picnic blanket with their mother and a small child",
+  },
+  {
+    key: "travel",
+    caption: "Free to travel",
+    alt: "A clay figure in a sun hat with a camera and a suitcase, mountains and a lighthouse behind",
+  },
+  {
+    key: "build",
+    caption: "Building your own thing",
+    alt: "A clay figure in an apron setting up their own little market stall of handmade cups",
   },
   {
     key: "abundant",
-    label: "Abundant",
+    caption: "Living in abundance",
     alt: "A clay figure carrying a basket overflowing with fruit, bread and flowers",
   },
   {
     key: "peaceful",
-    label: "At peace",
+    caption: "At peace with money",
     alt: "A clay figure sitting calmly on a cushion with eyes closed, holding a mug of tea",
   },
+  {
+    key: "wealthier",
+    caption: "Watching your wealth grow",
+    alt: "A clay figure watering a little tree whose leaves are gold coins, beside a jar of coins",
+  },
 ] as const;
+
+/** Card width: most of the strip, but short enough by height that Begin stays in view. */
+const CARD = "min(68%,38dvh)";
+/** Prints overlap like a fanned stack; the centred one sits on top. */
+const OVERLAP = 44;
 
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function WelcomeScenes({ className }: { className?: string }) {
-  const [shown, setShown] = useState(0);
+  const track = useRef<HTMLDivElement>(null);
+  const cards = useRef<(HTMLDivElement | null)[]>([]);
+  const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(() => !reducedMotion());
+
+  // Tilt and scale each print by its distance from the centre. Written straight
+  // to the DOM each frame so swiping stays smooth.
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const mid = el.scrollLeft + el.clientWidth / 2;
+      let nearest = 0;
+      let best = Infinity;
+      cards.current.forEach((card, i) => {
+        if (!card) return;
+        const step = card.offsetWidth - OVERLAP;
+        const d = (card.offsetLeft + card.offsetWidth / 2 - mid) / step;
+        const a = Math.min(1.5, Math.abs(d));
+        card.style.transform = `scale(${1 - 0.12 * a}) rotate(${Math.max(-1.5, Math.min(1.5, d)) * 4}deg)`;
+        card.style.zIndex = String(10 - Math.round(a * 4));
+        card.style.filter = `brightness(${1 - 0.06 * Math.min(1, a)})`;
+        if (Math.abs(d) < best) {
+          best = Math.abs(d);
+          nearest = i;
+        }
+      });
+      setActive(nearest);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  const goTo = (i: number) => {
+    const el = track.current;
+    const card = cards.current[i];
+    if (!el || !card) return;
+    el.scrollTo({
+      left: card.offsetLeft + card.offsetWidth / 2 - el.clientWidth / 2,
+      behavior: reducedMotion() ? "auto" : "smooth",
+    });
+  };
+
   useEffect(() => {
     if (!playing) return;
-    const id = setInterval(() => setShown((i) => (i + 1) % SCENES.length), 3200);
+    const id = setInterval(() => goTo((active + 1) % SCENES.length), 3400);
     return () => clearInterval(id);
-  }, [playing]);
+  }, [playing, active]);
+
+  const stop = () => setPlaying(false);
 
   return (
     <div className={cn("flex flex-col items-center", className)}>
-      {/* Sized by the screen's height too, so the Begin button stays in view. */}
-      <div className="raised relative aspect-square w-[min(100%,38dvh)] overflow-hidden rounded-[32px]">
+      <div
+        ref={track}
+        onPointerDown={stop}
+        onWheel={stop}
+        onTouchStart={stop}
+        className="no-scrollbar -mx-6 flex w-[calc(100%+3rem)] snap-x snap-mandatory overflow-x-auto py-4"
+        aria-roledescription="carousel"
+        aria-label="Who you could become"
+      >
+        <div aria-hidden className="shrink-0" style={{ width: `calc((100% - ${CARD}) / 2)` }} />
         {SCENES.map((s, i) => (
-          <Image
+          <div
             key={s.key}
-            src={`/welcome/${s.key}.webp`}
-            alt={s.alt}
-            width={720}
-            height={720}
-            priority={i === 0}
-            aria-hidden={i !== shown}
-            className={cn(
-              "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none",
-              i === shown ? "scale-100 opacity-100" : "scale-[1.03] opacity-0",
-            )}
-          />
+            ref={(node) => {
+              cards.current[i] = node;
+            }}
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${SCENES.length}: ${s.caption}`}
+            className="raised relative aspect-square shrink-0 snap-center overflow-hidden rounded-[28px] will-change-transform"
+            style={{ width: CARD, marginLeft: i === 0 ? 0 : -OVERLAP }}
+          >
+            <Image
+              src={`/welcome/${s.key}.webp`}
+              alt={s.alt}
+              width={720}
+              height={720}
+              priority={i < 2}
+              draggable={false}
+              className="h-full w-full select-none object-cover"
+            />
+          </div>
         ))}
+        <div aria-hidden className="shrink-0" style={{ width: `calc((100% - ${CARD}) / 2)` }} />
       </div>
 
-      <div className="tray mt-5 inline-flex gap-1 rounded-2xl p-1" role="tablist">
+      <p key={active} className="rise mt-1 text-[17px] font-medium" aria-live="polite">
+        {SCENES[active].caption}
+      </p>
+
+      <div className="mt-3 flex items-center gap-1.5">
         {SCENES.map((s, i) => (
           <button
             key={s.key}
-            role="tab"
-            aria-selected={i === shown}
             onClick={() => {
-              setPlaying(false);
-              setShown(i);
+              stop();
+              goTo(i);
             }}
+            aria-label={`Show ${s.caption.toLowerCase()}`}
+            aria-current={i === active}
             className={cn(
-              "h-9 rounded-xl px-4 text-sm transition",
-              i === shown ? "key-on" : "text-muted",
+              "h-1.5 rounded-full transition-all duration-300",
+              i === active ? "w-5 bg-foreground" : "w-1.5 bg-muted-2/70",
             )}
-          >
-            {s.label}
-          </button>
+          />
         ))}
       </div>
     </div>
