@@ -5,6 +5,7 @@
 // people pick the hair they like. Everything was drawn once in the app's clay
 // style (Figma AI, "monifes — clay art"), so there's no cost per person.
 
+import { useMemo, useSyncExternalStore } from "react";
 import { EYES } from "./cast-eyes";
 
 export const SKINS = [
@@ -154,4 +155,26 @@ export function saveMe(me: Me) {
   try {
     localStorage.setItem(ME_KEY, JSON.stringify(me));
   } catch {}
+}
+
+const noSubscribe = () => () => {};
+
+/**
+ * Who you are on this device, for showing (null until on the client, so the
+ * server render and the first client render agree). Re-reads on each render,
+ * so it's current after onboarding saves.
+ */
+export function useMe(): Me | null {
+  const raw = useSyncExternalStore(
+    noSubscribe,
+    () => {
+      try {
+        return localStorage.getItem(ME_KEY) ?? "";
+      } catch {
+        return "";
+      }
+    },
+    () => null,
+  );
+  return useMemo(() => (raw === null ? null : loadMe()), [raw]);
 }

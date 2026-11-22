@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConical, Check, Cloud, CloudOff } from "lucide-react";
+import { FlaskConical, Check, Cloud, CloudOff, RotateCcw } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { makePreset, PRESET_LABELS, PresetName } from "@/lib/presets";
 import { Card, ComingSoon, SectionLabel } from "@/components/ui";
 import { SignInSheet } from "@/components/sign-in-sheet";
+import { Onboarding } from "@/components/onboarding";
+import { ClayYou } from "@/components/clay-you";
+import { useMe } from "@/lib/character";
 import { cn } from "@/lib/utils";
 
 const SYNC_COPY = {
@@ -19,6 +22,9 @@ export default function ProfilePage() {
   const [applied, setApplied] = useState<PresetName | null>(null);
   const [signingIn, setSigningIn] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  // onboarding opened from here: just your look, or the whole journey again
+  const [journey, setJourney] = useState<"look" | "hello" | null>(null);
+  const me = useMe();
 
   function apply(name: PresetName) {
     loadData(makePreset(name));
@@ -28,6 +34,22 @@ export default function ProfilePage() {
   return (
     <div className="px-5 pb-8 pt-5">
       <h1 className="text-2xl font-medium">Profile</h1>
+
+      {/* You: your clay character, and a way back to change it */}
+      <Card className="mt-5 flex items-center gap-4">
+        <div className="raised w-20 shrink-0 overflow-hidden rounded-2xl">
+          {me && <ClayYou look={me.look} crop="head" label="Your clay character" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[17px] font-medium">{me?.name || "You"}</p>
+          <button
+            onClick={() => setJourney("look")}
+            className="mt-2 raised h-10 rounded-xl px-4 text-sm transition active:scale-[0.98]"
+          >
+            Change how you look
+          </button>
+        </div>
+      </Card>
 
       {/* Account — guests are invited (never pushed) to save their progress */}
       <Card className="mt-5">
@@ -81,7 +103,17 @@ export default function ProfilePage() {
             Loads sample data so you can see how each screen looks. Replaces whatever is
             currently saved{account ? " — including on your account" : ""}.
           </p>
-          <div className="mt-4 flex flex-col gap-2.5">
+          <button
+            onClick={() => setJourney("hello")}
+            className="mt-4 raised flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition active:scale-[0.98]"
+          >
+            <RotateCcw size={18} className="text-muted" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-[15px] font-medium">Start onboarding again</span>
+              <span className="text-xs text-muted">From “Welcome to monifes”. Keeps your data.</span>
+            </span>
+          </button>
+          <div className="mt-2.5 flex flex-col gap-2.5">
             {PRESET_LABELS.map((p) => (
               <button
                 key={p.key}
@@ -109,6 +141,7 @@ export default function ProfilePage() {
       />
 
       {signingIn && <SignInSheet onClose={() => setSigningIn(false)} />}
+      {journey && <Onboarding startAt={journey} onDone={() => setJourney(null)} />}
     </div>
   );
 }

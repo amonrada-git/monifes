@@ -174,6 +174,8 @@ quiet). Phone frame: iPhone 13 / 390px.
   style's measured eyes (`src/lib/cast-eyes.ts`, rules in `character.ts`). Square frames,
   sunglasses and hats are drawn and placed but parked. Made once with Figma AI in "monifes —
   clay art"; no cost per person. Saved locally under `monifes:me:v1` for now (not yet synced).
+  Profile shows your character with **Change how you look** (opens the builder); the dev-only
+  debug card has **Start onboarding again** (the whole journey, data kept).
   Next: three mascots as your little friends — the sprout, a Siamese lucky cat, a Shiba Inu guide
   dog (concepts made; roles to decide). "You're the hero, the mascot is your little friend."
   Tried and dropped: a 3D clay figure in three.js (not cute enough), an ink line-art builder

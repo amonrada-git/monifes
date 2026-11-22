@@ -190,7 +190,7 @@ export function Onboarding({
         {step === "look" && (
           <div key="look" className="rise flex flex-1 flex-col pt-2">
             <h1 className="text-[28px] font-medium leading-tight">
-              Which one feels like you, {name.trim()}?
+              {name.trim() ? `Which one feels like you, ${name.trim()}?` : "Which one feels like you?"}
             </h1>
             <p className="mt-2 text-sm text-muted">
               Pick a little you for the journey. You can change it any time.
