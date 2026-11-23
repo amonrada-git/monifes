@@ -171,8 +171,7 @@ quiet). Phone frame: iPhone 13 / 390px.
   (`scripts/art/head-swap.mjs`), then given the bob's face, colour-matched, with the shared body's
   clean neck and collar below the jaw line (`scripts/art/face-swap.mjs`);
   medium and deep skin are re-tints (`scripts/art/recolor-skin.mjs`); the backdrop is smoothed
-  (`scripts/art/smooth-backdrop.mjs`); see-through cut-outs for scenes in `cut/`
-  (`scripts/art/cut-figure.mjs`). Glasses are cut-outs (`public/dress/`) placed from each hair
+  (`scripts/art/smooth-backdrop.mjs`). Glasses are cut-outs (`public/dress/`) placed from each hair
   style's measured eyes (`src/lib/cast-eyes.ts`, rules in `character.ts`). Square frames,
   sunglasses and hats are drawn and placed but parked. Made once with Figma AI in "monifes —
   clay art"; no cost per person. Saved locally under `monifes:me:v1` for now (not yet synced).
