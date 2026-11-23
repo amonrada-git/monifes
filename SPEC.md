@@ -184,13 +184,13 @@ quiet). Phone frame: iPhone 13 / 390px.
   (preferred clay), and per-person AI generation through AI Gateway (≈ ¥30 a person; in git
   history, commit 0c93eb9).
 - ✅ Welcome: "See who you could become." — an album of six clay moments with *your* character
-  standing in each (the scenes are drawn without people; your see-through figure stands beside the
-  props, placed by hand per scene — `PLACE` in `welcome-scenes.tsx`): more time with family · free to travel ·
-  building your own thing · living in abundance · at peace with money · watching your wealth
-  grow. A swipeable scroll-snap stack (neighbours tucked behind, tilted), caption + page dots;
-  turns its own pages until touched. Art from Figma AI ("monifes — clay art",
-  ydtxVcnpFQreMj7ip1y4Pi, Signary team), 720px WebP in `public/scenes/`. Becoming's no-plan card shows the
-  today → becoming ring demo (3% → 20% of pay kept).
+  living each one: more time with family (a picnic, the family sharing your skin tone) · free to
+  travel · building your own thing (your market stall) · living in abundance · at peace with money
+  · watching your wealth grow. Drawn once per hair × skin (8 × 3 × 6 = 144 pictures, Figma AI,
+  "monifes — clay art"), in `public/moments/v1/<skin>-<hair>/`; glasses aren't drawn into these.
+  Before you've made a character, the same moments without anyone (`public/scenes/`). A swipeable
+  scroll-snap stack (neighbours tucked behind, tilted), caption + page dots; turns its own pages
+  until touched.
 - ✅ Onboarding layout: every step's main button sits in one fixed spot at the foot of the
   screen (a pinned footer of one height: button + a line below for a quiet link or note), and
   the step scrolls under it. Scrolling down slides the footer away so the options are easy to

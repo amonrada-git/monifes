@@ -78,9 +78,11 @@ const OLD_HAIR: Record<string, Hair> = { "woman-curly": "big-curls", "man-curly"
 const castId = (look: Pick<Look, "skin" | "hair">) => `${look.skin}-${look.hair}`;
 
 // Bump the folder when the pictures change, so no cached old ones are shown.
-// `cut`: the figure alone on transparency (same canvas), for standing in a scene.
-export const castSrc = (look: Pick<Look, "skin" | "hair">, cut = false) =>
-  `/people/v5/${cut ? "cut/" : ""}${castId(look)}.webp`;
+export const castSrc = (look: Pick<Look, "skin" | "hair">) => `/people/v5/${castId(look)}.webp`;
+
+/** You living one of the welcome album's moments (drawn per hair and skin). */
+export const momentSrc = (look: Pick<Look, "skin" | "hair">, moment: string) =>
+  `/moments/v1/${castId(look)}/${moment}.webp`;
 
 // ─── Dress-up placement ──────────────────────────────────────────────────────
 // Sizes are in eye-distances; `at` centres an item on the eyes, `bottom` puts
