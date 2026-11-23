@@ -1,4 +1,5 @@
-// Usage: node scripts/art/face-swap.mjs <head.webp> <face.webp> <out.webp> <eyes.json> <head id> <face id>
+// Usage: node scripts/art/face-swap.mjs <head.webp> <face.webp> <out.webp> <eyes.json> <head id> <face id> <body.webp>
+// (body: the shared body drawing, whose neck and collar are used below the chin)
 // Gives every hair style the same face: the face drawing's eyes, brows,
 // cheeks and smile (and its neck, which sits cleanly on the shared body) are
 // laid into the head drawing, scaled and placed by the eyes. The head
@@ -7,14 +8,14 @@
 import sharp from "sharp";
 import { readFileSync } from "fs";
 
-const [headFile, faceFile, out, eyesFile, headId, faceId] = process.argv.slice(2);
+const [headFile, faceFile, out, eyesFile, headId, faceId, bodyFile] = process.argv.slice(2);
 const all = JSON.parse(readFileSync(eyesFile, "utf8"));
 const geo = ({ l: [lx, ly], r: [rx, ry] }) => ({ d: Math.hypot(rx - lx, ry - ly), mx: (lx + rx) / 2, my: (ly + ry) / 2 });
 const V = geo(all[headId]), F = geo(all[faceId]);
 const { d, mx, my } = V;
 
 const load = async (f) => (await sharp(f).removeAlpha().raw().toBuffer({ resolveWithObject: true }));
-const Hd = await load(headFile), F0 = await load(faceFile);
+const Hd = await load(headFile), F0 = await load(faceFile), Bd = await load(bodyFile);
 const { width: w, height: h } = Hd.info;
 const bg = [0xec, 0xeb, 0xe6];
 
@@ -57,6 +58,16 @@ for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
   for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
     const yy = y + dy, xx = x + dx;
     if (yy >= 0 && yy < h && xx >= 0 && xx < w) fNear[yy * w + xx] = 1;
+  }
+}
+
+// the shared body's hair (the bun's strands), with the same 2px margin
+const bNear = new Uint8Array(w * h);
+for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+  if (!hairish(Bd.data, (y * w + x) * 3)) continue;
+  for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+    const yy = y + dy, xx = x + dx;
+    if (yy >= 0 && yy < h && xx >= 0 && xx < w) bNear[yy * w + xx] = 1;
   }
 }
 
@@ -103,15 +114,64 @@ for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
   }
 }
 
+// Each drawing's chin line, column by column: the lowest face-skin pixel
+// joined straight down from the eyes. Below the chin means below *both*
+// chins, so neither drawing's jaw shadow lands on the other's face.
+const skinish = (b, i) => {
+  const max = Math.max(b[i], b[i + 1], b[i + 2]), min = Math.min(b[i], b[i + 1], b[i + 2]);
+  return lum(b, i) > 140 && max > 0 && (max - min) / max > 0.12 && (max - min) / max < 0.62;
+};
+const chinOf = (b) => {
+  const out = new Int32Array(w).fill(-1);
+  for (let x = Math.round(mx - 0.9 * d); x <= Math.round(mx + 0.9 * d); x++) {
+    let y = Math.round(my + 0.3 * d), last = -1;
+    for (; y < my + 1.4 * d; y++) {
+      if (skinish(b, (y * w + x) * 3)) last = y;
+      else if (last > 0 && y - last > 14) break; // (steps over the mouth and cheeks' blush)
+    }
+    if (last > my + 0.55 * d) out[x] = last;
+  }
+  return out;
+};
+const chinV = chinOf(Hd.data), chinB = chinOf(B0);
+// (following the jaw's curve: at the sides it's higher than under the chin;
+// where neither drawing has jaw in a column, a line just under the chin)
+const chinAt = (x) => {
+  const found = x >= 0 && x < w ? Math.max(chinV[x], chinB[x]) : -1;
+  return found > 0 ? found + 3 : Math.round(my + 0.95 * d) + 3;
+};
+
+// Match the face drawing's skin to the head's: the average colour just
+// inside the oval's rim, in each, and shift the face by the difference.
+const shift = [0, 0, 0];
+{
+  const sum = [[0, 0, 0], [0, 0, 0]];
+  let n = 0;
+  for (let y = Math.round(my - 0.2 * d); y < my + 0.8 * d; y++) for (let x = Math.round(mx - 0.9 * d); x < mx + 0.9 * d; x++) {
+    const ex = (x - mx) / (0.9 * d), ey = (y - (my + 0.2 * d)) / (0.62 * d);
+    const r = Math.sqrt(ex * ex + ey * ey);
+    if (r < 0.7 || r > 0.95) continue;
+    const i = (y * w + x) * 3;
+    if (!skinish(Hd.data, i) || !skinish(Fd, i)) continue;
+    for (let c = 0; c < 3; c++) { sum[0][c] += Hd.data[i + c]; sum[1][c] += Fd[i + c]; }
+    n++;
+  }
+  if (n) for (let c = 0; c < 3; c++) shift[c] = (sum[0][c] - sum[1][c]) / n;
+}
+
 const o = Buffer.from(Hd.data);
 for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
   const i = (y * w + x) * 3;
   const vHair = hair(Hd.data, i), fHair = hair(Fd, i);
   let wgt = 0;
-  if (y > my + 0.95 * d) {
+  if (y > chinAt(x)) {
     // under the chin: the face drawing's neck and collar (the same body, cleanly
     // joined); the head drawing keeps hair that falls this low
-    if (!vNear[y * w + x] && !fNear[y * w + x]) { for (let c = 0; c < 3; c++) o[i + c] = B0[i + c]; }
+    if (vNear[y * w + x]) continue; // the head's own hair falling this low
+    // the shared body's own neck and collar — clean; where its own hair
+    // strands hang, the face drawing's; where both have hair, backdrop
+    const src = !bNear[y * w + x] ? Bd.data : !fNear[y * w + x] ? B0 : null;
+    for (let c = 0; c < 3; c++) o[i + c] = src ? src[i + c] : bg[c];
     continue;
   } else if (x < mx - 1.0 * d && y > my + 0.3 * d && handOf[y * w + x]) {
     // the waving hand, beside the face: the body's own, as it is
@@ -123,8 +183,9 @@ for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     continue;
   } else {
     // the features: an oval from the brows to the chin, feathered at its rim
-    const ex = (x - mx) / (0.95 * d), ey = (y - (my + 0.3 * d)) / (0.75 * d);
-    wgt = smooth((1 - Math.sqrt(ex * ex + ey * ey)) / 0.18);
+    // (stopping short of the jaw: each head keeps its own jaw and chin)
+    const ex = (x - mx) / (0.9 * d), ey = (y - (my + 0.2 * d)) / (0.62 * d);
+    wgt = smooth((1 - Math.sqrt(ex * ex + ey * ey)) / 0.32);
     if (!wgt) continue;
     if (y > my - 0.3 * d) {
       // eyes and smile: always the face drawing's (dark, but not hair)
@@ -135,7 +196,9 @@ for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     }
   }
   if (!wgt) continue;
-  for (let c = 0; c < 3; c++) o[i + c] = Math.round(Hd.data[i + c] * (1 - wgt) + Fd[i + c] * wgt);
+  // (the face's own colour, shifted to the head's skin — only on skin, not the eyes)
+  const tone = skinish(Fd, i) ? shift : [0, 0, 0];
+  for (let c = 0; c < 3; c++) o[i + c] = Math.round(Hd.data[i + c] * (1 - wgt) + Math.max(0, Math.min(255, Fd[i + c] + tone[c])) * wgt);
 }
 // Last, sweep away specks: small bits not joined to the figure (a stray
 // fingertip edge left over from a head drawing) become backdrop.

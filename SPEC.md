@@ -165,10 +165,11 @@ quiet). Phone frame: iPhone 13 / 390px.
   part, buzz cut, short curls) and **Glasses** (none, round). Woman/man only decides which hair
   styles are offered — everyone shares one face and body (decided 2026-11-23, after briefly
   trying no gender question). Hair and glasses are tiles of your own face with each option.
-  The art: 24 portraits in `public/people/v4/` (bump the folder when they change — cached old ones
+  The art: 24 portraits in `public/people/v5/` (bump the folder when they change — cached old ones
   otherwise linger), all one body, one face (the bob drawing's), one pose and outfit (cream knit,
   sage trousers): each hair style's head is turned to the body's tilt and set on the shared body
-  (`scripts/art/head-swap.mjs`), then given the bob's face and neck (`scripts/art/face-swap.mjs`);
+  (`scripts/art/head-swap.mjs`), then given the bob's face, colour-matched, with the shared body's
+  clean neck and collar below the jaw line (`scripts/art/face-swap.mjs`);
   medium and deep skin are re-tints (`scripts/art/recolor-skin.mjs`); the backdrop is smoothed
   (`scripts/art/smooth-backdrop.mjs`); see-through cut-outs for scenes in `cut/`
   (`scripts/art/cut-figure.mjs`). Glasses are cut-outs (`public/dress/`) placed from each hair

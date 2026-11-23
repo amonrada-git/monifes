@@ -83,12 +83,38 @@ if (eyes) {
     for (let x = Math.max(0, Math.floor(cx - R)); x < Math.min(w, cx + R); x++) {
       if ((x - cx) ** 2 + (y - cy) ** 2 > R * R) continue;
       // below the chin, just the neck: narrow, and smooth (not the knit collar)
-      if (y > chin && (Math.abs(x - cx) > 0.38 * d || rough[y * w + x] > 6)) continue;
+      if (y > chin) continue; // the neck is traced separately, below
       const [hh, ss, vv] = hsv((y * w + x) * 3);
       // bright enough to be skin, not brown hair; below the chin (the neck)
       // only clearly skin, not the knit collar
-      if ((hh < 36 || hh > 340) && ss > (y > chin ? 0.3 : 0.12) && ss < 0.72 && vv > 0.6 && L[y * w + x] > 145) m[y * w + x] = 1;
+      if ((hh < 36 || hh > 340) && ss > 0.12 && ss < 0.72 && vv > 0.6 && L[y * w + x] > 145) m[y * w + x] = 1;
     }
+}
+
+// The neck, traced: from the middle of the throat, flood through pixels that
+// are skin-coloured (warm, saturated — the knit is pale and grey-ish) and
+// smooth, staying between the chin and the collar. Its true outline, so no
+// blocky edges and no tinted collar.
+const neck = new Uint8Array(w * h);
+if (eyes) {
+  const [lx, ly, rx, ry] = eyes;
+  const d = Math.hypot(rx - lx, ry - ly), cx = (lx + rx) / 2, my = (ly + ry) / 2;
+  const top = my + 0.75 * d, bottom = my + 1.45 * d;
+  const isNeck = (p) => {
+    const [hh, ss, vv] = hsv(p * 3);
+    return (hh < 34 || hh > 340) && ss > 0.22 && vv > 0.5 && rough[p] < 7;
+  };
+  const st = [];
+  for (let y = Math.round(my + 1.0 * d); y < my + 1.15 * d; y++) st.push(y * w + Math.round(cx));
+  while (st.length) {
+    const p = st.pop();
+    if (p < 0 || p >= w * h || neck[p] || !isNeck(p)) continue;
+    const x = p % w, y = (p / w) | 0;
+    if (y < top || y > bottom || Math.abs(x - cx) > 0.65 * d) continue;
+    neck[p] = 1;
+    st.push(p - 1, p + 1, p - w, p + w);
+  }
+  for (let p = 0; p < w * h; p++) if (neck[p]) m[p] = 1;
 }
 
 // Hands: whole patches of clearly skin-coloured pixels below the face — warm
@@ -144,6 +170,7 @@ if (eyes) {
     if (!m[p]) continue;
     const x = p % w, y = (p / w) | 0;
     if ((x - cx) ** 2 + (y - cy) ** 2 <= R * R && y < chinLine) continue; // the face: already careful
+    if (neck[p]) continue;
     const [hh, ss] = hsv(p * 3);
     const warm = hh < 30 || hh > 340;
     if (!(ss > 0.33 || (warm && ss > 0.15))) m[p] = 0;

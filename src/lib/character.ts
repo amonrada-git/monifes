@@ -80,7 +80,7 @@ const castId = (look: Pick<Look, "skin" | "hair">) => `${look.skin}-${look.hair}
 // Bump the folder when the pictures change, so no cached old ones are shown.
 // `cut`: the figure alone on transparency (same canvas), for standing in a scene.
 export const castSrc = (look: Pick<Look, "skin" | "hair">, cut = false) =>
-  `/people/v4/${cut ? "cut/" : ""}${castId(look)}.webp`;
+  `/people/v5/${cut ? "cut/" : ""}${castId(look)}.webp`;
 
 // ─── Dress-up placement ──────────────────────────────────────────────────────
 // Sizes are in eye-distances; `at` centres an item on the eyes, `bottom` puts
